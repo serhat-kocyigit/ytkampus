@@ -1,0 +1,1057 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Paneli | YT Kampüs</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/global.css">
+  <style>
+    body { background:#f4f7fb; color:#172033; }
+    .app-layout { display:flex; min-height:100vh; }
+
+    /* Admin Sidebar - amber accent */
+    .sidebar {
+      width: 260px; flex-shrink:0;
+      background: #fff; border-right:1px solid #e2e8f0;
+      display:flex; flex-direction:column;
+      position:fixed; top:0; left:0; bottom:0; z-index:100;
+    }
+    .sidebar-logo { padding:24px; border-bottom:1px solid #e2e8f0; text-decoration:none; display:block; }
+    .sidebar-logo-text { font-size:22px; font-weight:900; color:#12336a; }
+    .sidebar-logo-text span { color:var(--amber-400); }
+    .sidebar-logo-badge { font-size:11px; color:#a16207; margin-top:2px; display:flex; align-items:center; gap:6px; }
+    .admin-dot { width:6px; height:6px; background:var(--amber-400); border-radius:50%; box-shadow:0 0 6px var(--amber-400); }
+
+    .sidebar-nav { flex:1; padding:16px 12px; overflow-y:auto; }
+    .sidebar-section { font-size:10px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#94a3b8; padding:8px 12px; margin-top:8px; }
+    .nav-item { display:flex; align-items:center; gap:12px; padding:11px 14px; border-radius:var(--radius-sm); color:#475569; text-decoration:none; font-size:14px; font-weight:500; transition:all 0.2s; margin-bottom:2px; cursor:pointer; background:none; border:none; width:100%; text-align:left; font-family:'Outfit'; }
+    .nav-item:hover { background:#f1f5f9; color:#1e3a8a; }
+    .nav-item.active { background:#eaf1ff; color:#2563eb; font-weight:700; }
+    .nav-icon { width:20px; text-align:center; font-size:16px; }
+    .nav-badge { margin-left:auto; background:var(--amber-400); color:#000; font-size:10px; font-weight:800; padding:2px 7px; border-radius:10px; }
+
+    .sidebar-user { padding:16px; border-top:1px solid #e2e8f0; }
+    .user-chip { display:flex; align-items:center; gap:10px; padding:12px; background:#f8fafc; border-radius:var(--radius-md); border:1px solid #e2e8f0; }
+    .user-info { flex:1; min-width:0; }
+    .user-name { font-size:13px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .user-role { font-size:11px; color:var(--amber-400); font-weight:600; }
+
+    .main-content { flex:1; margin-left:260px; min-width:0; max-width: 100vw; overflow-x: hidden; }
+    .top-bar { height:64px; background:#fff; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between; padding:0 32px; position:sticky; top:0; z-index:10; }
+    .top-bar h1 { font-size:18px; font-weight:700; color:#172033; }
+    .admin-top-heading { display:flex; align-items:center; gap:12px; }
+    .admin-mobile-menu-toggle { display:none; width:42px; height:42px; border:1px solid #dce6f2; border-radius:12px; background:#fff; color:#173b6d; font:700 23px/1 inherit; cursor:pointer; }
+    .admin-mobile-overlay { display:none; }
+    .admin-notification-wrap { position:relative; }
+    .admin-notification-button { min-width:68px; position:relative; }
+    .admin-notification-count { display:inline-grid; place-items:center; min-width:18px; height:18px; padding:0 4px; margin-left:3px; border-radius:99px; background:#e53935; color:#fff; font-size:10px; font-weight:800; vertical-align:middle; }
+    .admin-notification-popover { display:none; position:absolute; right:0; top:44px; width:min(370px,calc(100vw - 32px)); max-height:420px; overflow:auto; padding:10px; border:1px solid #dbe5f0; border-radius:16px; background:#fff; box-shadow:0 18px 42px rgba(15,23,42,.18); z-index:200; }
+    .admin-notification-popover.open { display:block; }
+    .admin-notification-header { display:flex; align-items:center; justify-content:space-between; padding:5px 5px 10px; color:#173b6d; font-size:14px; font-weight:800; }
+    .admin-notification-header span { color:#667992; font-size:11px; font-weight:700; }
+    .admin-notification-item { display:flex; width:100%; gap:10px; padding:12px; border:0; border-bottom:1px solid #e8eef6; border-radius:11px; background:#fff; color:#172033; text-align:left; font-family:inherit; cursor:pointer; }
+    .admin-notification-item:last-child { border-bottom:0; }.admin-notification-item.unread { background:#eff6ff; }.admin-notification-item:hover { background:#f7faff; }
+    .admin-notification-icon { width:31px; height:31px; flex:none; display:grid; place-items:center; border-radius:10px; background:#e3efff; font-size:15px; }.admin-notification-item.unread .admin-notification-icon { background:#dbeafe; }
+    .admin-notification-text { min-width:0; flex:1; }.admin-notification-text b { display:block; margin-bottom:3px; font-size:13px; }.admin-notification-text p { margin:0; color:#62758f; font-size:12px; line-height:1.4; overflow-wrap:anywhere; }.admin-notification-text time { display:block; margin-top:5px; color:#8b9ab0; font-size:10px; font-weight:650; }
+    .admin-notification-empty { padding:24px 12px; color:#74859c; text-align:center; font-size:13px; }
+    .user-name { color:#172033; }
+    .page-body { padding:32px; }
+
+    /* Stats */
+    .stats-grid { display:grid; grid-template-columns:repeat(4, 1fr); gap:16px; margin-bottom:32px; }
+    .stat-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); padding:24px; position:relative; overflow:hidden; }
+    .stat-card::before { content:''; position:absolute; top:0; right:0; width:80px; height:80px; border-radius:50%; opacity:0.06; }
+    .stat-card.green::before { background:var(--green-400); }
+    .stat-card.amber::before { background:var(--amber-400); }
+    .stat-card.blue::before { background:var(--blue-400); }
+    .stat-card.red::before { background:#ef4444; }
+    .stat-icon { font-size:24px; margin-bottom:12px; }
+    .stat-label { font-size:12px; color:var(--text-500); font-weight:600; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px; }
+    .stat-value { font-size:30px; font-weight:800; }
+
+    /* Content sections */
+    .content-card { background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; margin-bottom:24px; }
+    .content-card-header { padding:18px 24px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+    .content-card-header h3 { font-size:16px; font-weight:700; }
+
+    /* Filter bar */
+    .filter-bar { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:20px; }
+    .filter-bar input, .filter-bar select { flex:1; min-width:150px; max-width:220px; }
+
+    /* Page tabs */
+    .page-tabs { display:flex; gap:4px; background:rgba(10,10,12,0.8); border:1px solid var(--border); border-radius:var(--radius-sm); padding:4px; margin-bottom:28px; width:fit-content; }
+    .tab-btn { padding:8px 18px; border-radius:6px; background:none; border:none; color:var(--text-500); font-family:'Outfit'; font-size:14px; font-weight:500; cursor:pointer; transition:all 0.2s; }
+    .tab-btn.active { background:rgba(251,191,36,0.1); color:var(--amber-400); font-weight:600; }
+
+    .action-btns { display:flex; gap:6px; }
+    .admin-calendar-intro { display:flex; align-items:center; gap:10px; margin:0 0 20px; padding:13px 16px; background:linear-gradient(100deg,#eff6ff,#f8fbff); border:1px solid #dbeafe; border-radius:14px; color:#42617f; font-size:13px; }
+    .admin-calendar-intro strong { color:#183b68; }
+    .admin-field-calendar { border:1px solid var(--border); border-radius:18px; overflow:hidden; margin:0 0 20px; background:#fff; box-shadow:0 8px 24px rgba(15,23,42,.045); }
+    .admin-field-calendar > summary { list-style:none; cursor:pointer; }
+    .admin-field-calendar > summary::-webkit-details-marker { display:none; }
+    .admin-field-calendar-head { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:15px 18px; background:linear-gradient(100deg,#0f1d40,#1d4ed8); color:#fff; }
+    .admin-field-calendar-head::after { content:'⌄'; font-size:22px; line-height:1; transition:transform .18s ease; }
+    .admin-field-calendar[open] .admin-field-calendar-head::after { transform:rotate(180deg); }
+    .admin-field-title { display:flex; align-items:center; gap:10px; min-width:0; } .admin-field-title i { width:32px; height:32px; display:grid; place-items:center; background:rgba(255,255,255,.14); border-radius:10px; font-style:normal; }
+    .admin-field-title b { display:block; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .admin-field-title small { display:block; color:#bfdbfe; font-size:11px; margin-top:2px; }
+    .admin-field-price { white-space:nowrap; padding:7px 10px; border-radius:9px; background:rgba(255,255,255,.12); font-size:12px; font-weight:700; }
+    .admin-field-week { display:grid; grid-template-columns:repeat(7,minmax(138px,1fr)); min-width:990px; }
+    .admin-field-week-scroll { overflow-x:auto; }
+    .admin-day-column { border-right:1px solid #e7eef8; } .admin-day-column:last-child { border-right:0; }
+    .admin-day-head { padding:11px 8px; text-align:center; background:#f7faff; border-bottom:1px solid #e7eef8; color:#64748b; font-size:11px; font-weight:700; }
+    .admin-day-head b { display:block; margin-top:3px; font-size:13px; color:#193a66; } .admin-day-head.today { background:#eaf2ff; } .admin-day-head.today b { color:#2563eb; }
+    .admin-slot { width:calc(100% - 12px); min-height:37px; margin:6px; padding:6px 7px; border:1px solid transparent; border-radius:9px; display:flex; gap:5px; align-items:center; text-align:left; font-family:inherit; font-size:10px; }
+    .admin-slot time { font-weight:800; font-size:11px; } .admin-slot strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:650; }
+    .admin-slot.free { background:#f0fdf4; border-color:#bbf7d0; color:#15803d; cursor:pointer; transition:transform .16s ease, box-shadow .16s ease; } .admin-slot.free:hover { transform:translateY(-1px); box-shadow:0 6px 14px rgba(22,163,74,.12); } .admin-slot.free strong:before { content:'• '; color:#22c55e; font-size:15px; line-height:0; }
+    .admin-slot.busy { background:#fff1f2; border-color:#fecdd3; color:#9f1239; cursor:pointer; transition:transform .16s ease, box-shadow .16s ease; } .admin-slot.busy:hover { transform:translateY(-1px); box-shadow:0 6px 14px rgba(190,24,93,.14); } .admin-slot.busy strong:before { content:'● '; color:#ef4444; font-size:8px; }
+    .admin-slot.past { background:#f8fafc; border-color:#e2e8f0; color:#94a3b8; }
+    .admin-users-layout { display:grid; grid-template-columns:minmax(270px,360px) minmax(0,1fr); gap:20px; align-items:start; }
+    @media(max-width:700px) { .admin-field-calendar-head { padding:13px; } .admin-field-week { min-width:910px; } .admin-calendar-intro { align-items:flex-start; } .admin-users-layout { grid-template-columns:1fr; } }
+
+    @media (max-width: 900px) {
+      .sidebar { width:min(330px,86vw); height:100dvh; transform:translateX(-105%); transition:transform .24s ease; box-shadow:16px 0 34px rgba(15,23,42,.18); z-index:1200; }
+      .sidebar.open { transform:translateX(0); }
+      .sidebar-logo, .sidebar-section, .sidebar-user { display:block; }
+      .sidebar-logo { padding:22px 20px; }
+      .sidebar-nav { display:block; width:auto; padding:14px 12px; overflow-y:auto; }
+      .sidebar-section { display:block; }
+      .nav-item { display:flex; width:100%; height:auto; padding:11px 14px; margin:0 0 2px; border:0; border-radius:10px; font-size:14px; text-align:left; white-space:normal; overflow:visible; background:none !important; }
+      .nav-item.active { color:#2563eb; background:#eaf1ff !important; }
+      .nav-icon { display:inline-block; width:20px; margin:0; font-size:16px; text-align:center; }
+      .sidebar-user { padding:16px; }
+      .admin-mobile-overlay { display:block; position:fixed; inset:0; z-index:1190; background:rgba(15,23,42,.38); opacity:0; pointer-events:none; transition:opacity .24s ease; }
+      .admin-mobile-overlay.open { opacity:1; pointer-events:auto; }
+      .admin-mobile-menu-toggle { display:grid; place-items:center; }
+      .admin-notification-popover { position:fixed; top:76px; left:16px; right:16px; width:auto; max-height:min(420px,calc(100dvh - 100px)); }
+      .main-content { margin-left:0; margin-bottom:0; }
+      
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 560px) {
+      .top-bar { height:auto; min-height:64px; flex-direction: row; justify-content: space-between; align-items: center; padding: 12px 16px; position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,.95); backdrop-filter: blur(8px); }
+      .page-body { padding: 12px; }
+      .stats-grid { grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px; }
+      .data-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .data-table { min-width: 500px; }
+      .top-bar h1 { font-size: 16px; }
+      .top-bar .btn { font-size: 11px; padding: 6px 10px; }
+      #last-updated { display: none; }
+      
+      .stat-card { padding: 16px; border-radius: 12px; }
+      .stat-value { font-size: 28px; }
+      .stat-label { font-size: 11px; margin-bottom: 4px; }
+      .content-card-header { padding:14px; gap:10px; align-items:flex-start; flex-wrap:wrap; }
+      .content-card-header > div { flex-wrap:wrap; }
+      .filter-bar { gap:8px; }
+      .filter-bar input, .filter-bar select { flex:1 1 100%; max-width:none; min-width:0; }
+      .admin-field-calendar-head { padding:12px; gap:8px; }
+      .admin-field-calendar-head { display:grid; grid-template-columns:minmax(0,1fr) auto 16px; align-items:center; }
+      .admin-field-title { min-width:0; gap:8px; }
+      .admin-field-title > div { min-width:0; }
+      .admin-field-title i { width:30px; height:30px; flex:none; }
+      .admin-field-title b { white-space:normal; overflow:visible; text-overflow:clip; font-size:13px; line-height:1.2; }
+      .admin-field-title small { white-space:normal; font-size:10px; line-height:1.25; }
+      .admin-field-price { justify-self:end; font-size:10px; padding:6px 7px; }
+      .admin-field-calendar-head::after { justify-self:end; font-size:19px; }
+      .admin-field-week { min-width:840px; }
+      #page-account .content-card > div:last-child { grid-template-columns:1fr !important; padding:16px !important; }
+      .action-btns { flex-wrap:wrap; }
+      .data-table { min-width:680px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <!-- ADMIN SIDEBAR -->
+    <aside class="sidebar">
+      <a href="/index.html" class="sidebar-logo">
+        <div class="sidebar-logo-text">YT<span>Kampüs</span></div>
+        <div class="sidebar-logo-badge"><div class="admin-dot"></div> Admin Paneli</div>
+      </a>
+      <nav class="sidebar-nav">
+        <div class="sidebar-section">Genel Bakış</div>
+        <button class="nav-item active" onclick="showPage('dashboard')"><span class="nav-icon">📊</span> Dashboard</button>
+
+        <div class="sidebar-section">Rezervasyonlar</div>
+        <button class="nav-item" onclick="showPage('reservations')"><span class="nav-icon">📅</span> Tüm Rezervasyonlar <span class="nav-badge" id="res-badge">—</span></button>
+        <button class="nav-item" onclick="showPage('calendar')"><span class="nav-icon">🗓️</span> Takvim Görünümü</button>
+        <button class="nav-item" onclick="showPage('activity')"><span class="nav-icon">🧾</span> İşlem Geçmişi</button>
+        <button class="nav-item" onclick="showPage('fields')"><span class="nav-icon">🏟️</span> Sahalar & Görseller</button>
+
+        <div class="sidebar-section">Kullanıcılar</div>
+        <button class="nav-item" onclick="showPage('users')"><span class="nav-icon">👥</span> Kullanıcı Yönetimi</button>
+        <button class="nav-item" onclick="showPage('account')"><span class="nav-icon">⚙️</span> Hesabım</button>
+
+        
+          <div class="sidebar-section">Medya</div>
+          <button class="nav-item" onclick="showPage('videos')"><span class="nav-icon">🎥</span> Maç Videoları</button>
+<div class="sidebar-section">Sistem</div>
+        <a href="/index.html" class="nav-item"><span class="nav-icon">🏠</span> Ana Sayfa</a>
+        <button class="nav-item" onclick="ProSaha.logout()"><span class="nav-icon">🚪</span> Çıkış Yap</button>
+      </nav>
+      <div class="sidebar-user">
+        <div class="user-chip">
+          <div class="avatar" id="admin-avatar" style="background:var(--amber-400)">A</div>
+          <div class="user-info">
+            <div class="user-name" id="admin-name">Admin</div>
+            <div class="user-role">⚙ Yönetici</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+    <div id="admin-mobile-overlay" class="admin-mobile-overlay" aria-hidden="true"></div>
+
+    <!-- MAIN -->
+    <main class="main-content">
+      <div class="top-bar">
+        <div class="admin-top-heading"><button type="button" id="admin-mobile-menu-toggle" class="admin-mobile-menu-toggle" aria-label="Menüyü aç" aria-expanded="false">☰</button><h1 id="page-title">Dashboard</h1></div>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <span style="font-size:13px; color:var(--text-500);" id="last-updated"></span>
+          <div class="admin-notification-wrap"><button type="button" onclick="toggleAdminNotifications(event)" class="btn btn-secondary btn-sm admin-notification-button" aria-label="Bildirimler">🔔<span id="admin-notification-count" class="admin-notification-count" hidden></span></button><div id="admin-notification-popover" class="admin-notification-popover"></div></div>
+          <button onclick="refreshAll()" class="btn btn-secondary btn-sm">↻ Yenile</button>
+        </div>
+      </div>
+
+      <div class="page-body">
+
+        <!-- === DASHBOARD === -->
+        <div id="page-dashboard">
+          <div class="stats-grid">
+            <div class="stat-card green">
+              <div class="stat-icon">✅</div>
+              <div class="stat-label">Toplam Rezervasyon</div>
+              <div class="stat-value" id="s-total">—</div>
+            </div>
+            <div class="stat-card amber">
+              <div class="stat-icon">📅</div>
+              <div class="stat-label">Bugünkü Rezervasyon</div>
+              <div class="stat-value" id="s-today">—</div>
+            </div>
+            <div class="stat-card blue">
+              <div class="stat-icon">💰</div>
+              <div class="stat-label">Toplam Gelir</div>
+              <div class="stat-value" id="s-revenue" style="font-size:22px;">—</div>
+            </div>
+            <div class="stat-card red">
+              <div class="stat-icon">👥</div>
+              <div class="stat-label">Kayıtlı Üye</div>
+              <div class="stat-value" id="s-users">—</div>
+            </div>
+          </div>
+
+          <!-- Recent reservations -->
+          <div class="content-card">
+            <div class="content-card-header">
+              <h3>📋 Son Rezervasyonlar</h3>
+              <button onclick="showPage('reservations')" class="btn btn-secondary btn-sm">Tümünü Gör</button>
+            </div>
+            <div id="dash-res-table"><div class="loading-state"><div class="spinner"></div></div></div>
+          </div>
+        </div>
+
+        <!-- === RESERVATIONS === -->
+        <div id="page-reservations" style="display:none">
+          <div class="filter-bar">
+            <input type="search" id="filter-search" class="input-field" oninput="loadReservations()" placeholder="🔎 Kullanıcı, e-posta veya saha ara">
+            <input type="date" id="filter-date" class="input-field" onchange="loadReservations()" placeholder="Tarih filtrele">
+            <input type="date" id="filter-end-date" class="input-field" onchange="loadReservations()" placeholder="Bitiş tarihi">
+            <select id="filter-status" class="input-field" onchange="loadReservations()">
+              <option value="">Tüm Durumlar</option>
+              <option value="confirmed">Onaylı</option>
+              <option value="pending">Bekliyor</option>
+              <option value="cancelled">İptal</option>
+              <option value="completed">Tamamlandı</option>
+            </select>
+            <select id="filter-payment" class="input-field" onchange="loadReservations()"><option value="">Tüm ödemeler</option><option value="paid">Ödendi</option><option value="unpaid">Ödenmedi</option><option value="on_site">Elden ödeme</option></select>
+            <select id="filter-kind" class="input-field" onchange="loadReservations()"><option value="">Tüm kayıt türleri</option><option value="subscription">Yalnızca abonelikler</option><option value="regular">Tek seferlik rezervasyonlar</option></select>
+            <select id="filter-duration" class="input-field" onchange="loadReservations()"><option value="">Aylık / yıllık tümü</option><option value="monthly">Aylık abonelik</option><option value="yearly">Yıllık abonelik</option></select>
+            <select id="filter-field" class="input-field" onchange="loadReservations()"><option value="">Tüm sahalar</option></select>
+            <select id="filter-sort" class="input-field" onchange="loadReservations()"><option value="newest">En yeni önce</option><option value="oldest">En eski önce</option><option value="amount-high">Tutar: yüksekten</option><option value="amount-low">Tutar: düşükten</option></select>
+            <button onclick="clearFilter()" class="btn btn-secondary btn-sm">Temizle</button>
+          </div>
+          <div class="content-card">
+            <div class="content-card-header">
+              <h3>Rezervasyonlar</h3>
+              <span id="res-count" style="font-size:13px; color:var(--text-500);">—</span>
+            </div>
+            <div id="res-table"><div class="loading-state"><div class="spinner"></div></div></div>
+          </div>
+        </div>
+
+        <!-- === CALENDAR === -->
+        <div id="page-calendar" style="display:none">
+          <div class="content-card">
+            <div class="content-card-header">
+              <h3 id="cal-month-title">Takvim</h3>
+              <div style="display:flex; gap:8px;">
+                <button onclick="openManualReservation()" class="btn btn-primary btn-sm">＋ Saat kapat / abonelik</button>
+                <button onclick="changeWeek(-1)" class="btn btn-secondary btn-sm">‹ Önceki hafta</button>
+                <button onclick="changeWeek(1)" class="btn btn-secondary btn-sm">Sonraki hafta ›</button>
+              </div>
+            </div>
+            <div style="padding:24px;" id="calendar-grid"></div>
+          </div>
+        </div>
+
+        <div id="page-activity" style="display:none">
+          <div class="content-card">
+            <div class="content-card-header"><div><h3>🧾 Yönetici işlem geçmişi</h3><span style="font-size:12px;color:#64748b;">Hangi yöneticinin hangi işlemi ne zaman yaptığını buradan takip edin.</span></div><input id="activity-search" class="input-field" type="search" placeholder="İsim veya e-posta ara" aria-label="İşlem geçmişinde isim ara" oninput="renderActivity()" style="width:240px;max-width:100%;" autocomplete="off"></div>
+            <div id="activity-table"><div class="loading-state"><div class="spinner"></div></div></div>
+          </div>
+        </div>
+
+        <div id="page-fields" style="display:none">
+          <div class="content-card">
+            <div class="content-card-header"><div><h3>🏟️ Görsel ve saha yönetimi</h3><span style="font-size:12px;color:#64748b;">Ana sayfa görselleri ile kullanıcı panelindeki saha kartları ayrı alanlardan yönetilir.</span></div></div>
+            <div style="padding:20px 20px 0;"><h4 style="margin:0;font-size:16px;">Ana sayfa genel görselleri</h4><p style="margin:5px 0 0;color:#64748b;font-size:12px;">Logo, tanıtım alanları ve galeri görselleri</p></div>
+            <div id="homepage-image-list" style="padding:20px 20px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;"></div>
+            <div style="padding:24px 20px 0;"><h4 style="margin:0;font-size:16px;">Ana sayfa saha kartı görselleri</h4><p style="margin:5px 0 0;color:#64748b;font-size:12px;">Bu bölüm yalnızca ana sayfadaki saha kartlarının görsellerini değiştirir.</p></div>
+            <div id="homepage-field-management-list" style="padding:16px 20px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;"><div class="loading-state"><div class="spinner"></div></div></div>
+            <div style="padding:24px 20px 0;"><h4 style="margin:0;font-size:16px;">Kullanıcı paneli saha kartları</h4><p style="margin:5px 0 0;color:#64748b;font-size:12px;">Kullanıcıların rezervasyon ekranında gördüğü kart görselini ve saatlik ücreti buradan yönetin.</p></div>
+            <div id="field-management-list" style="padding:16px 20px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px;"><div class="loading-state"><div class="spinner"></div></div></div>
+          </div>
+        </div>
+
+        <div id="page-account" style="display:none">
+          <div class="content-card" style="max-width:760px;">
+            <div class="content-card-header"><h3>⚙️ Yönetici hesabı</h3><span style="font-size:12px; color:#64748b;">Bilgilerinizi ve şifrenizi güncelleyin</span></div>
+            <div style="padding:24px; display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+              <form onsubmit="saveAdminProfile(event)" style="display:flex; flex-direction:column; gap:12px;"><h4 style="margin:0 0 4px;">İletişim bilgileri</h4><label>Ad soyad<input id="admin-profile-name" class="input-field" required></label><label>E-posta<input id="admin-profile-email" type="email" class="input-field" required></label><label>Telefon<input id="admin-profile-phone" class="input-field"></label><button class="btn btn-primary" type="submit">Bilgileri kaydet</button></form>
+              <form onsubmit="changeAdminPassword(event)" style="display:flex; flex-direction:column; gap:12px;"><h4 style="margin:0 0 4px;">Şifre değiştir</h4><label>Mevcut şifre<input id="admin-current-password" type="password" class="input-field" required></label><label>Yeni şifre<input id="admin-new-password" type="password" minlength="8" class="input-field" required></label><label>Yeni şifre tekrar<input id="admin-new-password-confirm" type="password" minlength="8" class="input-field" required></label><button class="btn btn-secondary" type="submit">Şifreyi güncelle</button><small style="color:#64748b;">Yeni şifre en az 8 karakter olmalıdır.</small></form>
+            </div>
+          </div>
+        </div>
+
+        
+          <!-- === VIDEOS === -->
+          <div id="page-videos" style="display:none">
+            <div class="videos-grid">
+              <div class="content-card">
+                <div class="content-card-header">
+                  <h3>Yeni Maç Yükle</h3>
+                </div>
+                <form id="video-form" onsubmit="saveVideo(event)" style="padding:16px; display:flex; flex-direction:column; gap:16px;">
+                  <div>
+                    <label style="font-size:13px; font-weight:600; color:var(--text-300);">Tarih</label>
+                    <input type="date" id="v-date" class="input-field" required>
+                  </div>
+                  <div>
+                    <label style="font-size:13px; font-weight:600; color:var(--text-300);">Saat</label>
+                    <select id="v-time" class="input-field" required></select>
+                  </div>
+                  <div>
+                    <label style="font-size:13px; font-weight:600; color:var(--text-300);">Saha</label>
+                    <select id="v-field" class="input-field" required>
+                      <option value="9">Halı Saha</option>
+                      <option value="10">Halı Saha INTER HALISAHA</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="font-size:13px; font-weight:600; color:var(--text-300);">Cihazdan Video Seç (MP4)</label>
+                    <input type="file" id="v-file" accept="video/mp4,video/*" class="input-field" required>
+                  </div>
+                  <div id="upload-progress" style="display:none; font-size:12px; color:var(--brand-500); font-weight:bold;">Yükleniyor, lütfen bekleyin...</div>
+                  <button type="submit" class="btn btn-primary" style="width:100%;">Videoyu Eşleştir</button>
+                </form>
+              </div>
+              <div class="content-card">
+                <div class="content-card-header">
+                  <h3>Yüklü Maçlar</h3>
+                </div>
+                <div id="videos-table"><div class="loading-state"><div class="spinner"></div></div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- === USERS === -->
+        <div id="page-users" style="display:none">
+          <div class="admin-users-layout">
+            <section class="content-card">
+              <div class="content-card-header"><h3>Yeni kullanıcı oluştur</h3></div>
+              <form onsubmit="createAdminUser(event)" style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+                <p style="margin:0;color:var(--text-500);font-size:12px;line-height:1.45;">Buradan üye veya yönetici hesabı oluşturabilirsiniz.</p>
+                <label>Ad soyad<input id="new-user-name" class="input-field" required maxlength="100" autocomplete="name"></label>
+                <label>E-posta<input id="new-user-email" type="email" class="input-field" required maxlength="254" autocomplete="email"></label>
+                <label>Telefon <small style="color:var(--text-500);font-weight:400;">(isteğe bağlı)</small><input id="new-user-phone" class="input-field" maxlength="20" inputmode="tel" autocomplete="tel"></label>
+                <label>Yetki<select id="new-user-role" class="input-field"><option value="customer">Üye</option><option value="admin">Yönetici</option></select></label>
+                <label>Geçici şifre<input id="new-user-password" type="password" class="input-field" required minlength="8" autocomplete="new-password"></label>
+                <label>Şifre tekrar<input id="new-user-password-confirm" type="password" class="input-field" required minlength="8" autocomplete="new-password"></label>
+                <button class="btn btn-primary" type="submit">Kullanıcıyı oluştur</button>
+              </form>
+            </section>
+            <section class="content-card">
+              <div class="content-card-header">
+                <h3>Kullanıcı Listesi</h3>
+                <span id="user-count" style="font-size:13px; color:var(--text-500);">—</span>
+              </div>
+              <div id="users-table"><div class="loading-state"><div class="spinner"></div></div></div>
+            </section>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <div id="manual-reservation-modal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,.62); backdrop-filter:blur(5px); z-index:4000; align-items:center; justify-content:center; padding:16px;">
+    <form onsubmit="saveManualReservation(event)" style="background:#fff; width:min(560px,100%); border-radius:18px; overflow:hidden; box-shadow:0 24px 60px rgba(15,23,42,.28);">
+      <div style="padding:18px 20px; background:linear-gradient(100deg,#0f1d40,#2563eb); color:#fff; display:flex; justify-content:space-between; align-items:center;"><div><b style="font-size:16px;">Seçili saati dolu yap</b><small style="display:block; margin-top:4px; color:#bfdbfe;">Bu saat tek gün, aylık veya yıllık kapatılabilir.</small></div><button type="button" onclick="closeManualReservation()" style="border:0; background:rgba(255,255,255,.14); color:#fff; width:32px; height:32px; border-radius:9px; font-size:20px; cursor:pointer;">×</button></div>
+      <div style="padding:20px; display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+        <label style="grid-column:1/-1; font-size:12px; font-weight:700; color:#475569;">Spor alanı<select id="manual-field" class="input-field" required></select></label>
+        <label style="grid-column:1/-1; font-size:12px; font-weight:700; color:#475569;">Kullanıcı <span style="font-weight:400;">(boş bırakırsanız işletme blokajı olur)</span><select id="manual-user" class="input-field"><option value="">Yönetici blokajı — kullanıcıya bağlı değil</option></select></label>
+        <label style="font-size:12px; font-weight:700; color:#475569;">İlk tarih<input id="manual-date" type="date" class="input-field" required></label>
+        <label style="font-size:12px; font-weight:700; color:#475569;">Saat<select id="manual-time" class="input-field" required></select></label>
+        <label style="grid-column:1/-1; font-size:12px; font-weight:700; color:#475569;">Dolu tutma süresi<select id="manual-recurrence" class="input-field"><option value="once">Bugün / seçili gün — yalnızca bu saat</option><option value="monthly">Aylık — haftanın bu günü ve saati, 4 hafta</option><option value="yearly">Yıllık — haftanın bu günü ve saati, 52 hafta</option></select></label>
+        <p style="grid-column:1/-1; margin:0; padding:10px 12px; border-radius:10px; background:#eff6ff; color:#315a91; font-size:12px; line-height:1.5;">Dolu bir saatle çakışma varsa işlem yapılmaz; önce takvimdeki mevcut rezervasyonu kontrol edin.</p>
+      </div>
+      <div style="padding:0 20px 20px; display:flex; justify-content:flex-end; gap:10px;"><button type="button" class="btn btn-secondary" onclick="closeManualReservation()">Vazgeç</button><button type="submit" class="btn btn-primary">Kaydet</button></div>
+    </form>
+  </div>
+
+  
+  <!-- Day Detail Modal -->
+  <div id="day-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); z-index:3000; align-items:center; justify-content:center; padding:16px;">
+    <div style="background:var(--bg-card); width:100%; max-width:800px; border-radius:12px; border:1px solid var(--border); display:flex; flex-direction:column; max-height:90vh;">
+      <div style="padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+        <h3 id="day-modal-title" style="margin:0; font-size:18px;"></h3>
+        <button onclick="document.getElementById('day-modal').style.display='none'" style="background:none; border:none; color:var(--text-300); cursor:pointer; font-size:24px;">&times;</button>
+      </div>
+      <div id="day-modal-body" style="padding:16px; overflow-y:auto; flex:1;">
+      </div>
+    </div>
+  </div>
+    <script src="/js/app.js?v=security-cookie-2">
+    </script><script>
+    function escapeHtml(value) {
+      return String(value ?? '').replace(/[&<>'"]/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' })[char]);
+    }
+    ProSaha.fetch('/fields').then(res => { if(res.ok) { document.getElementById('v-field').innerHTML = res.data.map(f => `<option value="${f.id}">${f.name}</option>`).join(''); } });
+    async function showUserDetail(id) {
+      const { ok, data } = await ProSaha.fetch(`/admin/users/${id}`);
+      if (!ok) return ProSaha.toast(data.error || 'Kullanıcı bilgisi alınamadı', 'error');
+      const u = Object.fromEntries(Object.entries(data).map(([key, value]) => [key, typeof value === 'string' ? escapeHtml(value) : value]));
+      document.getElementById('pdf-content').innerHTML = '<div style="border-bottom:2px solid #eee; padding-bottom:15px; margin-bottom:15px; text-align:center;">' +
+          '<h2 style="margin:0 0 5px 0; color:var(--brand-500);">' + u.full_name + '</h2>' +
+          '<p style="margin:0; color:#666;">YT Kampüs Üye Bilgi Kartı</p>' +
+        '</div>' +
+        '<table style="width:100%; border-collapse:collapse; text-align:left;">' +
+          '<tbody>' +
+            '<tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><strong>E-Posta:</strong></td><td style="padding:8px 0; border-bottom:1px solid #eee; text-align:right;">' + u.email + '</td></tr>' +
+            '<tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><strong>Telefon:</strong></td><td style="padding:8px 0; border-bottom:1px solid #eee; text-align:right;">' + (u.phone || '-') + '</td></tr>' +
+            '<tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><strong>Doğum Tarihi:</strong></td><td style="padding:8px 0; border-bottom:1px solid #eee; text-align:right;">' + (u.birth_date ? ProSaha.formatDate(u.birth_date) : '-') + '</td></tr>' +
+            '<tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><strong>Doğum Yeri:</strong></td><td style="padding:8px 0; border-bottom:1px solid #eee; text-align:right;">' + (u.birth_place || '-') + '</td></tr>' +
+            '<tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><strong>Kan Grubu:</strong></td><td style="padding:8px 0; border-bottom:1px solid #eee; text-align:right;">' + (u.blood_type || '-') + '</td></tr>' +
+            '<tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><strong>Sağlık Durumu:</strong></td><td style="padding:8px 0; border-bottom:1px solid #eee; text-align:right;">' + (u.health_conditions || '-') + '</td></tr>' +
+            '<tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><strong>İl / İlçe:</strong></td><td style="padding:8px 0; border-bottom:1px solid #eee; text-align:right;">' + (u.city || '-') + ' / ' + (u.district || '-') + '</td></tr>' +
+            '<tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><strong>Açık Adres:</strong></td><td style="padding:8px 0; border-bottom:1px solid #eee; text-align:right;">' + (u.address || '-') + '</td></tr>' +
+            '<tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><strong>Veli Ad Soyad:</strong></td><td style="padding:8px 0; border-bottom:1px solid #eee; text-align:right;">' + (u.parent_name || '-') + '</td></tr>' +
+            '<tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><strong>Veli Telefon:</strong></td><td style="padding:8px 0; border-bottom:1px solid #eee; text-align:right;">' + (u.parent_phone || '-') + '</td></tr>' +
+            '<tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><strong>Bizi Nereden Duydu:</strong></td><td style="padding:8px 0; border-bottom:1px solid #eee; text-align:right;">' + (u.reference_source || '-') + '</td></tr>' +
+            '<tr><td style="padding:8px 0; border-bottom:1px solid #eee;"><strong>Sözleşme / KVKK:</strong></td><td style="padding:8px 0; border-bottom:1px solid #eee; text-align:right;">' + (u.contract_approved ? 'Sözleşme onaylı' : 'Sözleşme onaysız') + ' · ' + (u.kvkk_approved ? 'KVKK onaylı' : 'KVKK onaysız') + '</td></tr>' +
+            '<tr><td style="padding:8px 0;"><strong>Kayıt Tarihi:</strong></td><td style="padding:8px 0; text-align:right;">' + ProSaha.formatDate(u.created_at) + '</td></tr>' +
+          '</tbody>' +
+        '</table>';
+      document.getElementById('user-detail-modal').style.display = 'flex';
+    }
+
+    function downloadPdf() {
+      const element = document.getElementById('pdf-content');
+      const opt = {
+        margin: 0.5,
+        filename: 'kullanici_karti.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+    }
+  </script>
+  <script>
+    if (!ProSaha.requireAuth(true)) {}
+
+    const user = ProSaha.getUser();
+    let calWeekStart = (() => { const d = new Date(); d.setHours(0,0,0,0); return d; })();
+    let allReservations = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('admin-avatar').textContent = user.full_name?.[0]?.toUpperCase() || 'A';
+      document.getElementById('admin-name').textContent = user.full_name;
+      const menuButton = document.getElementById('admin-mobile-menu-toggle');
+      const overlay = document.getElementById('admin-mobile-overlay');
+      if (menuButton) menuButton.addEventListener('click', toggleAdminMobileMenu);
+      if (overlay) overlay.addEventListener('click', closeAdminMobileMenu);
+      document.querySelector('.sidebar-nav').addEventListener('click', () => {
+        if (window.matchMedia('(max-width: 900px)').matches) closeAdminMobileMenu();
+      });
+      loadDashboard();
+      loadAdminNotifications();
+      window.setInterval(loadAdminNotifications, 30000);
+      document.addEventListener('click', event => {
+        if (!event.target.closest('.admin-notification-wrap')) {
+          document.getElementById('admin-notification-popover').classList.remove('open');
+        }
+      });
+    });
+
+    function toggleAdminMobileMenu() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.getElementById('admin-mobile-overlay');
+      const button = document.getElementById('admin-mobile-menu-toggle');
+      const isOpen = sidebar.classList.toggle('open');
+      overlay.classList.toggle('open', isOpen);
+      button.setAttribute('aria-expanded', String(isOpen));
+      button.setAttribute('aria-label', isOpen ? 'Menüyü kapat' : 'Menüyü aç');
+    }
+    function closeAdminMobileMenu() {
+      const sidebar = document.querySelector('.sidebar');
+      const overlay = document.getElementById('admin-mobile-overlay');
+      const button = document.getElementById('admin-mobile-menu-toggle');
+      sidebar.classList.remove('open'); overlay.classList.remove('open');
+      button.setAttribute('aria-expanded', 'false'); button.setAttribute('aria-label', 'Menüyü aç');
+    }
+
+    async function loadAdminNotifications() {
+      const {ok,data} = await ProSaha.fetch('/notifications');
+      const panel = document.getElementById('admin-notification-popover');
+      if (!ok) {
+        panel.innerHTML = '<div class="admin-notification-empty">Bildirimler yüklenemedi. Tekrar deneyin.</div>';
+        return false;
+      }
+      const unread = data.filter(item => !item.is_read).length;
+      const count = document.getElementById('admin-notification-count');
+      count.textContent = unread > 9 ? '9+' : unread;
+      count.hidden = !unread;
+      const typeIcon = { reservation:'📅', payment:'💳', video:'🎥', system:'🔔' };
+      panel.innerHTML = `<div class="admin-notification-header"><span>Bildirimler</span><span>${unread ? `${unread} okunmamış` : 'Tümü okundu'}</span></div>` + (data.length ? data.map(item => `<button type="button" class="admin-notification-item ${item.is_read ? '' : 'unread'}" onclick="readAdminNotification(${Number(item.id)})"><span class="admin-notification-icon">${typeIcon[item.type] || '🔔'}</span><span class="admin-notification-text"><b>${escapeHtml(item.title)}</b><p>${escapeHtml(item.message)}</p><time>${formatAdminNotificationTime(item.created_at)}</time></span></button>`).join('') : '<div class="admin-notification-empty">Henüz bildiriminiz yok.</div>');
+      return true;
+    }
+    function formatAdminNotificationTime(value) { const date = new Date(value); return Number.isNaN(date.getTime()) ? '' : date.toLocaleString('tr-TR', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }); }
+    async function toggleAdminNotifications(event) {
+      event?.stopPropagation();
+      const panel = document.getElementById('admin-notification-popover');
+      const opens = !panel.classList.contains('open');
+      panel.classList.toggle('open', opens);
+      if (!opens) return;
+      panel.innerHTML = '<div class="admin-notification-empty">Bildirimler yükleniyor…</div>';
+      await loadAdminNotifications();
+    }
+    async function readAdminNotification(id) {
+      const {ok,data} = await ProSaha.fetch(`/notifications/${id}/read`,{method:'PATCH'});
+      if (!ok) return ProSaha.toast(data.error || 'Bildirim güncellenemedi', 'error');
+      await loadAdminNotifications();
+    }
+
+    // Pages
+    const pages = { dashboard: 'page-dashboard', reservations: 'page-reservations', calendar: 'page-calendar', activity: 'page-activity', fields: 'page-fields', users: 'page-users', account: 'page-account', videos: 'page-videos' };
+    const titles = { dashboard: 'Dashboard', reservations: 'Rezervasyon Yönetimi', calendar: 'Takvim Görünümü', activity: 'İşlem Geçmişi', fields: 'Sahalar & Görseller', users: 'Kullanıcı Yönetimi', account: 'Hesabım', videos: 'Maç Videoları' };
+
+    function showPage(name) {
+      if (window.matchMedia('(max-width: 900px)').matches) closeAdminMobileMenu();
+      Object.values(pages).forEach(id => document.getElementById(id).style.display = 'none');
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      document.getElementById(pages[name]).style.display = '';
+      document.getElementById('page-title').textContent = titles[name];
+      
+      const navItem = document.querySelector(`.nav-item[onclick*="showPage('${name}')"]`);
+      if (navItem) navItem.classList.add('active');
+      
+      document.getElementById('last-updated').textContent = 'Son güncelleme: ' + new Date().toLocaleTimeString('tr-TR');
+      if (name === 'reservations') loadReservations();
+      if (name === 'users') loadUsers();
+      if (name === 'account') loadAdminProfile();
+      if (name === 'fields') loadFieldManagement();
+        if (name === 'videos') loadVideos();
+      if (name === 'calendar') renderCalendar();
+      if (name === 'activity') loadActivity();
+    }
+
+    function refreshAll() { loadDashboard(); document.getElementById('last-updated').textContent = 'Son güncelleme: ' + new Date().toLocaleTimeString('tr-TR'); }
+
+    function fieldPreview(field) {
+      if (field.image_url) return field.image_url;
+      const name = String(field.name || '').toLowerCase();
+      if (name.includes('inter')) return 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?auto=format&fit=crop&w=900&q=80';
+      if (name.includes('toplant')) return 'https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=900&q=80';
+      if (name.includes('hal') || name.includes('futbol')) return '/assets/images/football-pitch-card.png';
+      if (name.includes('teni')) return 'https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?auto=format&fit=crop&w=900&q=80';
+      if (name.includes('voley')) return 'https://images.unsplash.com/photo-1592656094267-764a45160876?auto=format&fit=crop&w=900&q=80';
+      if (name.includes('basket')) return 'https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=900&q=80';
+      if (name.includes('dans')) return 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?auto=format&fit=crop&w=900&q=80';
+      if (name.includes('sanat')) return 'https://images.unsplash.com/photo-1460661419201-fd4cecdf8a8b?auto=format&fit=crop&w=900&q=80';
+      if (name.includes('müz') || name.includes('muz')) return 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=900&q=80';
+      if (name.includes('padel')) return 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?q=80&w=900&auto=format&fit=crop';
+      if (name.includes('havuz')) return 'https://images.unsplash.com/photo-1530549387789-4c1017266635?auto=format&fit=crop&w=900&q=80';
+      return '/assets/images/football-pitch-card.png';
+    }
+    function homepageFieldPreview(field) {
+      if (field.homepage_image_url) return field.homepage_image_url;
+      const name = String(field.name || '').toLocaleLowerCase('tr-TR');
+      if (name.includes('inter')) return '/assets/images/4.jpg';
+      if (name.includes('teni')) return '/assets/images/5.jpg';
+      if (name.includes('voley')) return '/assets/images/6.jpg';
+      if (name.includes('basket')) return '/assets/images/7.jpg';
+      if (name.includes('müz') || name.includes('muz')) return '/assets/images/10.jpg';
+      if (name.includes('sanat')) return '/assets/images/11.jpg';
+      if (name.includes('dans')) return '/assets/images/12.jpg';
+      if (name.includes('padel')) return '/assets/images/8.jpg';
+      if (name.includes('havuz')) return '/assets/images/9.jpg';
+      return '/assets/images/3.jpg';
+    }
+
+    async function loadFieldManagement() {
+      const userPanelContainer = document.getElementById('field-management-list');
+      const homepageContainer = document.getElementById('homepage-field-management-list');
+      const loading = '<div class="loading-state"><div class="spinner"></div></div>';
+      userPanelContainer.innerHTML = loading;
+      homepageContainer.innerHTML = loading;
+      const {ok,data} = await ProSaha.fetch('/admin/fields');
+      if (!ok) { userPanelContainer.innerHTML = '<p>Alanlar yüklenemedi.</p>'; homepageContainer.innerHTML = '<p>Alanlar yüklenemedi.</p>'; return; }
+      homepageContainer.innerHTML = data.fields.map(field => `<article style="border:1px solid #dbe5f0;border-radius:14px;padding:12px;background:#f8fbff;"><b style="display:block;font-size:13px;margin-bottom:8px;">${escapeHtml(field.name)}</b><img id="homepage-field-preview-${field.id}" src="${escapeHtml(homepageFieldPreview(field))}" alt="${escapeHtml(field.name)}" style="width:100%;height:118px;border-radius:9px;object-fit:cover;background:#dbeafe;"><input id="homepage-field-image-${field.id}" type="file" accept="image/jpeg,image/png,image/webp" class="input-field" style="font-size:11px;margin-top:9px;"><button class="btn btn-secondary btn-sm" style="margin-top:8px;width:100%;" onclick="uploadHomepageFieldImage(${field.id})">Ana sayfa görselini yükle</button></article>`).join('');
+      userPanelContainer.innerHTML = data.fields.map(field => `<article style="border:1px solid #dbe5f0;border-radius:16px;overflow:hidden;background:#fff;"><img id="field-preview-${field.id}" src="${escapeHtml(fieldPreview(field))}" alt="${escapeHtml(field.name)}" style="width:100%;height:148px;object-fit:cover;background:#eff6ff;"><div style="padding:15px;"><strong style="display:block;font-size:15px;margin-bottom:3px;">${escapeHtml(field.name)}</strong><small style="color:#64748b;display:block;margin-bottom:13px;">Rezervasyon ekranındaki kullanıcı kartı</small><label style="font-size:12px;font-weight:700;display:block;margin-bottom:5px;">Saatlik ücret (₺)</label><div style="display:flex;gap:8px;"><input id="field-price-${field.id}" class="input-field" type="number" min="0" step="1" value="${Number(field.price_per_hour)}"><button class="btn btn-primary btn-sm" onclick="saveField(${field.id})">Fiyatı Kaydet</button></div><input id="field-image-${field.id}" type="file" accept="image/jpeg,image/png,image/webp" class="input-field" style="font-size:12px;margin-top:10px;"><button class="btn btn-secondary btn-sm" style="margin-top:8px;width:100%;" onclick="uploadFieldImage(${field.id})">Kullanıcı kartı görselini yükle</button></div></article>`).join('');
+      loadHomepageImages();
+    }
+    async function loadHomepageImages() {
+      const target=document.getElementById('homepage-image-list'); const {ok,data}=await ProSaha.fetch('/admin/site-images'); if (!ok) return;
+      const items=[['site_logo','Site logosu (üst menü, alt menü ve tarayıcı simgesi)','/assets/images/favicon.png'],['hero_image','Ana sayfa ana görseli','/assets/images/1.jpg'],['academy_logo','INTER Academy Türkiye Kayseri logosu','/assets/images/inter-academy-logo.webp'],['about_image','Hakkımızda görseli','/assets/images/2.jpg'],['academy_tennis','Tenis akademisi','/assets/images/13.jpg'],['academy_inter','Inter akademisi','/assets/images/14.jpg'],['academy_art','Sanat merkezi','/assets/images/16.jpg'],['academy_dance','Dans okulu','/assets/images/17.jpg'],['academy_language','Dil akademisi','/assets/images/18.jpg'],['academy_kids','Çocuk akademisi','/assets/images/19.jpg'],['team_image','Uzman kadro','/assets/images/20.jpg'],...Array.from({length:8},(_,index)=>[`gallery_${index+21}`,`Galeri görseli ${index+21}`,`/assets/images/${index+21}.jpg`])];
+      target.innerHTML=items.map(([key,label,fallback])=>`<article style="border:1px solid #dbe5f0;border-radius:14px;padding:12px;background:#f8fbff;"><b style="display:block;font-size:13px;margin-bottom:8px;">${label}</b><img id="site-preview-${key}" src="${escapeHtml(data.images[key]||fallback)}" style="width:100%;height:108px;border-radius:9px;object-fit:cover;background:#dbeafe;"><input id="site-image-${key}" type="file" accept="image/jpeg,image/png,image/webp" class="input-field" style="font-size:11px;margin-top:9px;"><button class="btn btn-secondary btn-sm" style="margin-top:8px;width:100%;" onclick="uploadSiteImage('${key}')">Görseli Yükle</button></article>`).join('');
+    }
+    async function uploadSiteImage(key) { const file=document.getElementById(`site-image-${key}`).files[0]; if(!file) return ProSaha.toast('Önce bir görsel seçin.','error'); const response=await fetch(`/api/admin/site-images/${key}`,{method:'POST',headers:{Authorization:`Bearer ${ProSaha.getToken()}`,'Content-Type':file.type},body:file}); const data=await response.json().catch(()=>({})); if(!response.ok) return ProSaha.toast(data.error||'Görsel yüklenemedi','error'); document.getElementById(`site-preview-${key}`).src=`${data.image_url}?v=${Date.now()}`; ProSaha.toast('Ana sayfa görseli güncellendi','success'); }
+    async function saveField(id) {
+      const price = Number(document.getElementById(`field-price-${id}`).value);
+      const {ok,data} = await ProSaha.fetch(`/admin/fields/${id}`, {method:'PATCH',body:JSON.stringify({price_per_hour:price})});
+      ProSaha.toast(ok ? 'Saha bilgileri güncellendi' : (data.error || 'Saha güncellenemedi'), ok ? 'success' : 'error');
+    }
+    async function uploadFieldImage(id) {
+      const file = document.getElementById(`field-image-${id}`).files[0];
+      if (!file) return ProSaha.toast('Önce bir görsel seçin.', 'error');
+      if (file.size > 10 * 1024 * 1024) return ProSaha.toast('Görsel en fazla 10 MB olabilir.', 'error');
+      const response = await fetch(`/api/admin/fields/${id}/image`, {method:'POST',headers:{Authorization:`Bearer ${ProSaha.getToken()}`, 'Content-Type':file.type},body:file});
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) return ProSaha.toast(data.error || 'Görsel yüklenemedi', 'error');
+      document.getElementById(`field-preview-${id}`).src = `${data.image_url}?v=${Date.now()}`;
+      ProSaha.toast('Kullanıcı paneli kart görseli güncellendi', 'success');
+    }
+    async function uploadHomepageFieldImage(id) {
+      const file = document.getElementById(`homepage-field-image-${id}`).files[0];
+      if (!file) return ProSaha.toast('Önce bir görsel seçin.', 'error');
+      if (file.size > 10 * 1024 * 1024) return ProSaha.toast('Görsel en fazla 10 MB olabilir.', 'error');
+      const response = await fetch(`/api/admin/fields/${id}/homepage-image`, {method:'POST',headers:{Authorization:`Bearer ${ProSaha.getToken()}`, 'Content-Type':file.type},body:file});
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) return ProSaha.toast(data.error || 'Görsel yüklenemedi', 'error');
+      document.getElementById(`homepage-field-preview-${id}`).src = `${data.homepage_image_url}?v=${Date.now()}`;
+      ProSaha.toast('Ana sayfa saha kartı görseli güncellendi', 'success');
+    }
+
+    async function loadDashboard() {
+      const [statsRes, resRes] = await Promise.all([
+        ProSaha.fetch('/admin/stats'),
+        ProSaha.fetch('/admin/reservations')
+      ]);
+      if (statsRes.ok) {
+        const s = statsRes.data;
+        document.getElementById('s-total').textContent = s.total_reservations;
+        document.getElementById('s-today').textContent = s.today_reservations;
+        document.getElementById('s-revenue').textContent = ProSaha.formatCurrency(s.total_revenue);
+        document.getElementById('s-users').textContent = s.total_customers;
+        document.getElementById('res-badge').textContent = s.total_reservations;
+      }
+      if (resRes.ok) {
+        allReservations = resRes.data;
+        renderResTable(resRes.data.slice(0, 8), 'dash-res-table', true);
+      }
+    }
+
+    async function loadReservations() {
+      const date = document.getElementById('filter-date')?.value || '';
+      const endDate = document.getElementById('filter-end-date')?.value || '';
+      const status = document.getElementById('filter-status')?.value || '';
+      const search = (document.getElementById('filter-search')?.value || '').trim().toLocaleLowerCase('tr-TR');
+      const payment = document.getElementById('filter-payment')?.value || '';
+      const kind = document.getElementById('filter-kind')?.value || '';
+      const duration = document.getElementById('filter-duration')?.value || '';
+      const fieldId = document.getElementById('filter-field')?.value || '';
+      const sort = document.getElementById('filter-sort')?.value || 'newest';
+      const { ok, data } = await ProSaha.fetch('/admin/reservations');
+      if (ok) {
+        const fieldSelect = document.getElementById('filter-field');
+        const selectedField = fieldSelect.value;
+        fieldSelect.innerHTML = '<option value="">Tüm sahalar</option>' + [...new Map(data.map(r => [r.field_id, r.field_name])).entries()].sort((a,b)=>String(a[1]).localeCompare(String(b[1]),'tr')).map(([id,name])=>`<option value="${Number(id)}">${escapeHtml(name || 'Saha')}</option>`).join('');
+        fieldSelect.value = selectedField;
+        let filtered = groupSubscriptionRows(data).filter(r => {
+          const note = String(r.notes || ''); const isSubscription = Boolean(r.is_subscription);
+          const start = String(r.date).slice(0,10), end = String(r.subscription_end || r.date).slice(0,10);
+          const haystack = `${r.full_name || ''} ${r.email || ''} ${r.field_name || ''}`.toLocaleLowerCase('tr-TR');
+          return (!search || haystack.includes(search)) && (!status || r.status === status) && (!fieldId || String(r.field_id) === fieldId) && (!payment || (payment === 'on_site' ? r.payment_method === 'on_site' : r.payment_status === payment)) && (!kind || (kind === 'subscription' ? isSubscription : !isSubscription)) && (!duration || (duration === 'monthly' ? (note.includes('Aylık') || (isSubscription && r.occurrences === 4)) : (note.includes('Yıllık') || (isSubscription && r.occurrences > 4)))) && (!date || end >= date) && (!endDate || start <= endDate);
+        });
+        filtered.sort((a,b) => sort === 'oldest' ? String(a.date).localeCompare(String(b.date)) : sort === 'amount-high' ? Number(b.total_amount)-Number(a.total_amount) : sort === 'amount-low' ? Number(a.total_amount)-Number(b.total_amount) : String(b.date).localeCompare(String(a.date)));
+        document.getElementById('res-count').textContent = `${filtered.length} kayıt`;
+        renderResTable(filtered, 'res-table', false);
+      }
+    }
+
+    function clearFilter() {
+      document.getElementById('filter-date').value = '';
+      document.getElementById('filter-end-date').value = '';
+      document.getElementById('filter-status').value = '';
+      document.getElementById('filter-search').value = '';
+      document.getElementById('filter-payment').value = '';
+      document.getElementById('filter-kind').value = '';
+      document.getElementById('filter-duration').value = '';
+      document.getElementById('filter-field').value = '';
+      document.getElementById('filter-sort').value = 'newest';
+      loadReservations();
+    }
+
+    function groupSubscriptionRows(list) {
+      const groups = new Map();
+      list.forEach(row => {
+        const note = String(row.notes || '');
+        if (!note.startsWith('Yönetici')) { groups.set(`single-${row.id}`, [row]); return; }
+        const series = note.match(/series:([0-9a-f-]{36})/i)?.[1];
+        const key = series ? `series-${series}` : `legacy-${row.user_id}-${row.field_id}-${row.time_slot}-${note.replace(/ \| yönetici tarafından sonlandırıldı/g, '')}`;
+        groups.set(key, [...(groups.get(key) || []), row]);
+      });
+      return [...groups.values()].map(rows => {
+        if (rows.length === 1) return rows[0];
+        const ordered = [...rows].sort((a,b) => String(a.date).localeCompare(String(b.date)));
+        const first = ordered[0], last = ordered[ordered.length - 1];
+        const activeRows = ordered.filter(row => ['pending', 'confirmed'].includes(row.status));
+        // Tamamen sonlandırılmış aboneliklerde kapatma işlemi tekrar sunulmaz.
+        return { ...first, status: activeRows.length ? activeRows[0].status : 'cancelled', is_subscription:true, can_end_subscription:activeRows.length > 0, occurrences:rows.length, subscription_end:last.date, total_amount:rows.reduce((sum,row) => sum + Number(row.total_amount || 0), 0), subscription_label:String(first.notes || '').includes('Yıllık') || rows.length > 4 ? 'Yıllık abonelik' : 'Aylık abonelik' };
+      });
+    }
+
+    function renderResTable(list, targetId, mini) {
+      const displayList = mini || targetId === 'day-modal-body' ? list : groupSubscriptionRows(list);
+      const el = document.getElementById(targetId);
+      if (!displayList.length) { el.innerHTML = '<div class="empty-state"><div class="icon">📋</div><h3>Kayıt bulunamadı</h3></div>'; return; }
+      el.innerHTML = `<div style="overflow-x:auto;"><table class="data-table"><thead><tr>
+        <th>Kullanıcı</th><th>Saha</th><th>Tarih</th><th>Saat</th><th>Tutar</th><th>Kaydı oluşturan</th><th>Durum</th><th>Ödeme</th>${mini ? '' : '<th>İşlemler</th>'}
+      </tr></thead><tbody>
+        ${displayList.map(r => `<tr>
+          <td><div style="display:flex; align-items:center; gap:8px;"><div class="avatar" style="background:${/^#[0-9a-fA-F]{6}$/.test(r.avatar_color || '') ? r.avatar_color : '#4ade80'}; width:28px; height:28px; font-size:12px;">${escapeHtml((r.full_name || 'U')[0].toUpperCase())}</div><div><div style="font-size:13px; font-weight:600;">${escapeHtml(r.full_name || 'Bilinmiyor')}</div><div style="font-size:11px; color:var(--text-500);">${escapeHtml(r.email || '')}</div></div></div></td>
+          <td>${escapeHtml(r.field_name || '—')}</td>
+          <td>${r.is_subscription ? `<strong>${r.subscription_label}</strong><br><span style="font-size:11px; color:#64748b;">${ProSaha.formatDate(r.date)} – ${ProSaha.formatDate(r.subscription_end)} · ${r.occurrences} hafta</span>` : ProSaha.formatDate(r.date)}</td>
+          <td><span class="badge badge-blue">${r.time_slot}</span></td>
+          <td><strong>${ProSaha.formatCurrency(r.total_amount)}</strong></td>
+          <td>${escapeHtml(r.created_by_name || (String(r.notes || '').startsWith('Yönetici') ? 'Önceki yönetici kaydı' : r.full_name || '—'))}</td>
+          <td>${statusBadge(r.status)}</td>
+          <td><span class="badge ${r.payment_status === 'paid' ? 'badge-green' : 'badge-red'}">${r.payment_status === 'paid' ? (r.payment_method === 'online' ? 'İyzico ile ödendi' : 'Ödendi') : 'Ödenmedi'}</span></td>
+          ${mini ? '' : `<td><div class="action-btns">
+            ${r.is_subscription ? (r.can_end_subscription ? `<button onclick="confirmRecurringEnd(${r.id})" class="btn btn-danger btn-sm">Aboneliği Kapat</button>` : '<span style="font-size:12px;color:var(--text-500);">Abonelik kapatıldı</span>') : `${r.status !== 'confirmed' ? `<button onclick="updateRes(${r.id},'confirmed')" class="btn btn-outline btn-sm">Onayla</button>` : ''}${r.status !== 'cancelled' ? `<button onclick="updateRes(${r.id},'cancelled')" class="btn btn-danger btn-sm">İptal</button>` : ''}<button onclick="deleteRes(${r.id})" class="btn btn-danger btn-sm">Sil</button>`}
+          </div></td>`}
+        </tr>`).join('')}
+      </tbody></table></div>`;
+    }
+
+    function statusBadge(s) {
+      const map = { confirmed: ['badge-green','Onaylı'], pending: ['badge-amber','Bekliyor'], cancelled: ['badge-red','İptal'], completed: ['badge-gray','Tamamlandı'] };
+      const [cls, lbl] = map[s] || ['badge-gray', s];
+      return `<span class="badge ${cls}">${lbl}</span>`;
+    }
+
+    let activityRows = [];
+    async function loadActivity() {
+      const el = document.getElementById('activity-table');
+      const { ok, data } = await ProSaha.fetch('/admin/activity');
+      if (!ok) { el.innerHTML = '<div class="empty-state"><div class="icon">⚠️</div><h3>İşlem geçmişi yüklenemedi</h3></div>'; return; }
+      activityRows = data;
+      renderActivity();
+    }
+    function renderActivity() {
+      const el = document.getElementById('activity-table');
+      const query = (document.getElementById('activity-search')?.value || '').trim().toLocaleLowerCase('tr-TR');
+      const rows = activityRows.filter(item => `${item.actor_name || ''} ${item.actor_email || ''} ${item.details || ''}`.toLocaleLowerCase('tr-TR').includes(query));
+      if (!activityRows.length) { el.innerHTML = '<div class="empty-state"><div class="icon">🧾</div><h3>Henüz yönetici işlemi yok</h3></div>'; return; }
+      if (!rows.length) { el.innerHTML = '<div class="empty-state"><div class="icon">🔎</div><h3>Aramanızla eşleşen işlem bulunamadı</h3></div>'; return; }
+      el.innerHTML = `<div class="data-table-wrapper"><table class="data-table"><thead><tr><th>Tarih</th><th>İşlemi yapan</th><th>İşlem</th><th>Detay</th></tr></thead><tbody>${rows.map(item => `<tr><td>${new Date(item.created_at).toLocaleString('tr-TR', { dateStyle:'short', timeStyle:'short' })}</td><td><strong>${escapeHtml(item.actor_name || 'Bilinmiyor')}</strong><br><span style="font-size:11px;color:var(--text-500)">${escapeHtml(item.actor_email || '')}</span></td><td>${escapeHtml(item.action)}</td><td>${escapeHtml(item.details || '—')}</td></tr>`).join('')}</tbody></table></div>`;
+    }
+
+    async function updateRes(id, status) {
+      const { ok } = await ProSaha.fetch(`/admin/reservations/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) });
+      if (ok) { ProSaha.toast('Rezervasyon güncellendi'); loadReservations(); }
+      else ProSaha.toast('Hata oluştu', 'error');
+    }
+
+    async function deleteRes(id) {
+      if (!confirm('Bu rezervasyonu kalıcı olarak silmek istiyor musunuz?')) return;
+      const { ok } = await ProSaha.fetch(`/admin/reservations/${id}`, { method: 'DELETE' });
+      if (ok) { ProSaha.toast('Rezervasyon silindi'); loadReservations(); loadDashboard(); }
+      else ProSaha.toast('Hata oluştu', 'error');
+    }
+
+    async function loadUsers() {
+      const { ok, data } = await ProSaha.fetch('/admin/users');
+      if (!ok) return;
+      window.allUsers = data;
+      document.getElementById('user-count').textContent = data.length + " kullanıcı";
+      document.getElementById('users-table').innerHTML = '<div style="overflow-x:auto;"><table class="data-table"><thead><tr>' +
+        '<th>Kullanıcı</th><th>E-Posta</th><th>Telefon</th><th>Rol</th><th>Kayıt Tarihi</th><th>Durum</th><th>İşlem</th>' +
+      '</tr></thead><tbody>' +
+        data.map(rawUser => {
+          const u = {
+            ...rawUser,
+            full_name: escapeHtml(rawUser.full_name || ''),
+            email: escapeHtml(rawUser.email || ''),
+            phone: escapeHtml(rawUser.phone || '-'),
+            avatar_color: /^#[0-9a-fA-F]{6}$/.test(rawUser.avatar_color || '') ? rawUser.avatar_color : '#4ade80'
+          };
+          return '<tr>' +
+          '<td><div style="display:flex; align-items:center; gap:8px;"><div class="avatar" style="background:' + (u.avatar_color || '#4ade80') + '; width:28px; height:28px; font-size:12px;">' + u.full_name[0].toUpperCase() + '</div>' + u.full_name + '</div></td>' +
+          '<td>' + u.email + '</td>' +
+          '<td>' + (u.phone || '-') + '</td>' +
+          '<td><span class="badge ' + (u.role === 'admin' ? 'badge-amber' : 'badge-blue') + '">' + (u.role === 'admin' ? '👑 Admin' : '👤 Üye') + '</span></td>' +
+          '<td>' + ProSaha.formatDate(u.created_at) + '</td>' +
+          '<td><span class="badge ' + (u.is_active ? 'badge-green' : 'badge-red') + '">' + (u.is_active ? 'Aktif' : 'Pasif') + '</span></td>' +
+          '<td>' +
+            (u.role !== 'admin' ? '<button onclick="toggleUser(' + u.id + ')" class="btn btn-secondary btn-sm" style="margin-right:4px;">' + (u.is_active ? 'Devre Dışı' : 'Aktifleştir') + '</button>' : '') +
+            '<button onclick="showUserDetail(' + u.id + ')" class="btn btn-primary btn-sm">Detaylar</button>' +
+          '</td>' +
+        '</tr>'; }).join('') +
+      '</tbody></table></div>';
+    }
+
+    async function loadAdminProfile() {
+      const { ok, data } = await ProSaha.fetch('/auth/me');
+      if (!ok) return ProSaha.toast('Hesap bilgileri alınamadı', 'error');
+      document.getElementById('admin-profile-name').value = data.full_name || '';
+      document.getElementById('admin-profile-email').value = data.email || '';
+      document.getElementById('admin-profile-phone').value = data.phone || '';
+    }
+    async function saveAdminProfile(event) {
+      event.preventDefault();
+      const body = { full_name: document.getElementById('admin-profile-name').value.trim(), email: document.getElementById('admin-profile-email').value.trim(), phone: document.getElementById('admin-profile-phone').value.trim() };
+      const { ok, data } = await ProSaha.fetch('/auth/me', { method:'PATCH', body:JSON.stringify(body) });
+      if (!ok) return ProSaha.toast(data.error || 'Bilgiler güncellenemedi', 'error');
+      document.getElementById('admin-name').textContent = data.user.full_name;
+      ProSaha.toast('Yönetici bilgileri güncellendi');
+    }
+    async function changeAdminPassword(event) {
+      event.preventDefault();
+      const current_password = document.getElementById('admin-current-password').value;
+      const new_password = document.getElementById('admin-new-password').value;
+      if (new_password !== document.getElementById('admin-new-password-confirm').value) return ProSaha.toast('Yeni şifreler eşleşmiyor', 'error');
+      const { ok, data } = await ProSaha.fetch('/auth/password', { method:'PATCH', body:JSON.stringify({ current_password, password: new_password }) });
+      if (!ok) return ProSaha.toast(data.error || 'Şifre güncellenemedi', 'error');
+      event.target.reset(); ProSaha.toast('Şifreniz başarıyla güncellendi');
+    }
+    async function toggleUser(id) {
+      const { ok } = await ProSaha.fetch(`/admin/users/${id}/toggle`, { method: 'PATCH' });
+      if (ok) { ProSaha.toast('Kullanıcı güncellendi'); loadUsers(); }
+    }
+
+    async function createAdminUser(event) {
+      event.preventDefault();
+      const form = event.currentTarget;
+      const password = document.getElementById('new-user-password').value;
+      if (password !== document.getElementById('new-user-password-confirm').value) return ProSaha.toast('Şifreler aynı değil', 'error');
+      const submit = form.querySelector('button[type="submit"]');
+      submit.disabled = true;
+      const body = {
+        full_name: document.getElementById('new-user-name').value.trim(),
+        email: document.getElementById('new-user-email').value.trim(),
+        phone: document.getElementById('new-user-phone').value.trim(),
+        role: document.getElementById('new-user-role').value,
+        password
+      };
+      const { ok, data } = await ProSaha.fetch('/admin/users', { method:'POST', body:JSON.stringify(body) });
+      submit.disabled = false;
+      if (!ok) return ProSaha.toast(data.error || 'Kullanıcı oluşturulamadı', 'error');
+      form.reset();
+      ProSaha.toast(data.user.role === 'admin' ? 'Yönetici hesabı oluşturuldu' : 'Üye hesabı oluşturuldu');
+      loadUsers();
+    }
+
+    // Weekly agenda: every area receives its own day-by-day, hour-by-hour board.
+    const openCalendarFieldIds = new Set();
+    function changeWeek(dir) { calWeekStart.setDate(calWeekStart.getDate() + (dir * 7)); renderCalendar(); }
+    function adminIso(d) { return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+    async function renderCalendar() {
+      const { ok, data } = await ProSaha.fetch('/admin/reservations'); if (!ok) return;
+      const fieldsResult = await ProSaha.fetch('/fields');
+      // Padel ve havuz işletmeye açılana kadar yönetici ajandasında gösterilmez.
+      const inactiveWeeklyFields = ['padel kortu yt kampus', 'havuz yt kampus'];
+      const fields = fieldsResult.ok ? fieldsResult.data.filter(field => !inactiveWeeklyFields.includes(String(field.name || '').trim().toLocaleLowerCase('tr-TR'))) : [];
+      const dates = Array.from({length:7},(_,i)=>{ const d=new Date(calWeekStart); d.setDate(calWeekStart.getDate()+i); return d; });
+      document.getElementById('cal-month-title').textContent = `${dates[0].toLocaleDateString('tr-TR',{day:'2-digit',month:'long'})} – ${dates[6].toLocaleDateString('tr-TR',{day:'2-digit',month:'long'})} · Saha Ajandası`;
+      const names=['Pzt','Sal','Çar','Per','Cum','Cmt','Paz'];
+      const hours=[...Array.from({length:15},(_,i)=>String(i+9).padStart(2,'0')+':00'),'00:00','01:00'];
+      const today=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()).split('/').reverse().join('-');
+      const nowParts=new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Istanbul',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(new Date()).split(':');
+      const nowMinutes=Number(nowParts[0])*60+Number(nowParts[1]);
+      const isPast=(date,hour)=> { if(date<today) return true; if(date>today) return false; const minute=hour.startsWith('00')||hour.startsWith('01') ? (Number(hour.slice(0,2))+24)*60 : Number(hour.slice(0,2))*60; return minute<=nowMinutes; };
+      let html='<div class="admin-calendar-intro">🗓️ <span><strong>Haftalık saha ajandası:</strong> Her kart bir spor alanını gösterir; yeşil saatler müsait, kırmızı saatler doludur.</span></div>';
+      fields.forEach(field=>{
+        const price=Number(field.price_per_hour||0).toLocaleString('tr-TR');
+        html+=`<details class="admin-field-calendar" data-field-id="${Number(field.id)}" ${openCalendarFieldIds.has(Number(field.id)) ? 'open' : ''}><summary><div class="admin-field-calendar-head"><div class="admin-field-title"><i>🏟️</i><div><b>${escapeHtml(field.name)}</b><small>Takvimi açmak için dokunun</small></div></div><span class="admin-field-price">₺${price}/saat</span></div></summary><div class="admin-field-week-scroll"><div class="admin-field-week">`;
+        dates.forEach(d=>{
+          const date=adminIso(d); const isToday=date===today;
+          html+=`<div class="admin-day-column"><div class="admin-day-head ${isToday?'today':''}">${names[(d.getDay()+6)%7]}<b>${d.toLocaleDateString('tr-TR',{day:'2-digit',month:'short'})}</b></div>`;
+          hours.forEach(hour=>{
+            const reservation=data.find(r=>Number(r.field_id)===Number(field.id)&&String(r.date).slice(0,10)===date&&String(r.time_slot).slice(0,5)===hour&&['pending','confirmed'].includes(r.status));
+            const past=isPast(date,hour); const cls=reservation?'busy':past?'past':'free';
+            const isRepeating=reservation && String(reservation.notes || '').includes('series:');
+            const isAdminBlock=reservation && String(reservation.notes || '').includes('Yönetici blokajı');
+            const isManualReservation=reservation && String(reservation.notes || '').startsWith('Yönetici');
+            const label=reservation ? escapeHtml(isAdminBlock ? 'Yönetici blokajı' : (reservation.full_name||'Dolu')) : past ? 'Geçti' : 'Müsait';
+            html+=reservation
+              ? (isManualReservation ? `<button type="button" class="admin-slot busy" onclick="confirmRecurringEnd(${Number(reservation.id)})" title="${isRepeating ? 'Tekrarlayan kaydı sonlandır' : 'Yönetici blokajını kaldır'}"><time>${hour}</time><strong>${label}</strong></button>` : `<button type="button" class="admin-slot busy" onclick="showUserDetail(${Number(reservation.user_id)})" title="${label} · Kullanıcı bilgi kartını aç"><time>${hour}</time><strong>${label}</strong></button>`)
+              : past ? `<div class="admin-slot past"><time>${hour}</time><strong>${label}</strong></div>` : `<button type="button" class="admin-slot free" onclick="openManualReservation(${Number(field.id)}, '${date}', '${hour}')" title="Bu saati kapat"><time>${hour}</time><strong>${label}</strong></button>`;
+          });
+          html+='</div>';
+        });
+        html+='</div></div></details>';
+      });
+      document.getElementById('calendar-grid').innerHTML=html;
+      document.querySelectorAll('.admin-field-calendar').forEach(calendar => {
+        calendar.addEventListener('toggle', () => {
+          const fieldId = Number(calendar.dataset.fieldId);
+          if (calendar.open) openCalendarFieldIds.add(fieldId);
+          else openCalendarFieldIds.delete(fieldId);
+        });
+      });
+    }
+
+    async function openManualReservation(selectedFieldId = null, selectedDate = null, selectedTime = null) {
+      const [fieldsResult, usersResult] = await Promise.all([ProSaha.fetch('/fields'), ProSaha.fetch('/admin/users')]);
+      if (!fieldsResult.ok || !usersResult.ok) return ProSaha.toast('Form bilgileri yüklenemedi', 'error');
+      document.getElementById('manual-field').innerHTML = fieldsResult.data.map(f => `<option value="${Number(f.id)}">${escapeHtml(f.name)}</option>`).join('');
+      document.getElementById('manual-user').innerHTML = '<option value="">Yönetici blokajı — kullanıcıya bağlı değil</option>' + usersResult.data.filter(u => u.role === 'customer' && u.is_active).map(u => `<option value="${Number(u.id)}">${escapeHtml(u.full_name)} · ${escapeHtml(u.phone || u.email)}</option>`).join('');
+      const today = new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Istanbul',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date()).split('/').reverse().join('-');
+      document.getElementById('manual-date').min = today;
+      document.getElementById('manual-date').value = selectedDate || today;
+      document.getElementById('manual-time').innerHTML = [...Array.from({length:15},(_,i)=>String(i+9).padStart(2,'0')+':00'),'00:00','01:00'].map(time => `<option value="${time}">${time}</option>`).join('');
+      if (selectedFieldId) document.getElementById('manual-field').value = String(selectedFieldId);
+      if (selectedTime) document.getElementById('manual-time').value = selectedTime;
+      document.getElementById('manual-reservation-modal').style.display = 'flex';
+    }
+    function closeManualReservation() { document.getElementById('manual-reservation-modal').style.display = 'none'; }
+    async function confirmRecurringEnd(reservationId) {
+      if (!confirm('Bu tekrarlayan blokajı seçili haftadan itibaren sonlandırmak istiyor musunuz? İleri tarihlerdeki saatler yeniden müsait olur.')) return;
+      const { ok, data } = await ProSaha.fetch(`/admin/reservations/recurring/${reservationId}`, { method:'DELETE' });
+      if (!ok) return ProSaha.toast(data.error || 'Kayıt sonlandırılamadı', 'error');
+      renderCalendar(); loadReservations(); loadDashboard();
+      ProSaha.toast(`${data.cancelled} ileri tarihli kayıt sonlandırıldı`);
+    }
+    async function saveManualReservation(event) {
+      event.preventDefault();
+      const body = { field_id:Number(document.getElementById('manual-field').value), user_id:document.getElementById('manual-user').value || null, date:document.getElementById('manual-date').value, time_slot:document.getElementById('manual-time').value, recurrence:document.getElementById('manual-recurrence').value };
+      const { ok, data } = await ProSaha.fetch('/admin/reservations/manual', { method:'POST', body:JSON.stringify(body) });
+      if (!ok) return ProSaha.toast(data.error || 'Rezervasyon oluşturulamadı', 'error');
+      closeManualReservation(); renderCalendar(); loadReservations(); loadDashboard();
+      ProSaha.toast(data.created + ' adet elden ödemeli kayıt oluşturuldu');
+    }
+  
+    
+      // Populate time options
+      const vTime = document.getElementById('v-time');
+      if (vTime) {
+        for(let i=8; i<24; i++) {
+          const t = String(i).padStart(2,'0') + ':00';
+          vTime.innerHTML += `<option value="${t}">${t}</option>`;
+        }
+      }
+
+      async function loadVideos() {
+        const { ok, data } = await ProSaha.fetch('/admin/videos');
+        if (!ok) return;
+        const el = document.getElementById('videos-table');
+        if (!data.videos.length) {
+          el.innerHTML = '<div class="empty-state"><div class="icon">🎥</div><h3>Henüz video yüklenmedi</h3></div>';
+          return;
+        }
+        el.innerHTML = `<div style="overflow-x:auto;"><table class="data-table"><thead><tr>
+          <th>Tarih</th><th>Saat</th><th>Saha</th><th>URL</th><th>İşlem</th>
+        </tr></thead><tbody>
+          ${data.videos.map(v => `<tr>
+            <td>${ProSaha.formatDate(v.date)}</td>
+            <td><span class="badge badge-blue">${v.time_slot}</span></td>
+            <td>${v.field_name}</td>
+            <td><button onclick="playAdminVideo(${v.id})" class="btn btn-outline btn-sm">İzle</button></td>
+            <td><button onclick="deleteVideo(${v.id})" class="btn btn-danger btn-sm">Sil</button></td>
+          </tr>`).join('')}
+        </tbody></table></div>`;
+      }
+
+      async function saveVideo(e) {
+        e.preventDefault();
+        const fileInput = document.getElementById('v-file');
+        if (!fileInput.files.length) return alert('Lütfen bir video seçin');
+        
+        const file = fileInput.files[0];
+        const date = document.getElementById('v-date').value;
+        const time_slot = document.getElementById('v-time').value;
+        const field_id = document.getElementById('v-field').value;
+        
+        document.getElementById('upload-progress').style.display = 'block';
+        
+        try {
+          const res = await fetch(`/api/admin/videos/upload?fileName=${encodeURIComponent(file.name)}&date=${date}&time_slot=${time_slot}&field_id=${field_id}`, {
+            method: 'POST',
+            headers: {
+              'Authorization': 'Bearer ' + ProSaha.getToken(),
+              'Content-Type': file.type || 'application/octet-stream'
+            },
+            body: file
+          });
+          
+          const data = await res.json();
+          if (res.ok && data.success) {
+            ProSaha.toast('Video cihazdan başarıyla yüklendi!', 'success');
+            document.getElementById('video-form').reset();
+            loadVideos();
+          } else {
+            ProSaha.toast(data.error || 'Yükleme başarısız', 'error');
+          }
+        } catch(e) {
+           ProSaha.toast('Bağlantı hatası', 'error');
+        } finally {
+           document.getElementById('upload-progress').style.display = 'none';
+        }
+      }
+
+      async function deleteVideo(id) {
+        if (!confirm('Bu videoyu silmek istiyor musunuz?')) return;
+        const { ok } = await ProSaha.fetch(`/admin/videos/${id}`, { method: 'DELETE' });
+        if (ok) {
+          ProSaha.toast('Video silindi', 'success');
+          loadVideos();
+        }
+      }
+
+      async function playAdminVideo(id) {
+        const response = await fetch(`/api/videos/${id}/content`, { headers: { Authorization: 'Bearer ' + ProSaha.getToken() } });
+        if (!response.ok) return ProSaha.toast('Video açılamadı', 'error');
+        window.open(URL.createObjectURL(await response.blob()), '_blank', 'noopener');
+      }
+
+      function openDayModal(dateStr) {
+      const resList = window.currentResByDate[dateStr] || [];
+      document.getElementById('day-modal-title').textContent = ProSaha.formatDate(dateStr) + ' Rezervasyonları';
+      renderResTable(resList, 'day-modal-body', false);
+      document.getElementById('day-modal').style.display = 'flex';
+    }
+  </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<!-- Kullanıcı Detay Modal -->
+<div id="user-detail-modal" class="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; overflow-y:auto; padding:20px;">
+  <div class="modal-content" style="background:#fff; border-radius:12px; max-width:600px; width:100%; position:relative; box-shadow:0 10px 25px rgba(0,0,0,0.2);">
+    <div style="padding: 20px; border-bottom: 1px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+      <h3 style="margin:0; font-size:18px;">Kullanıcı Bilgi Kartı</h3>
+      <div>
+        <button onclick="downloadPdf()" class="btn btn-primary btn-sm" style="margin-right:10px;">📄 PDF İndir</button>
+        <button onclick="document.getElementById('user-detail-modal').style.display='none'" class="btn btn-secondary btn-sm">Kapat</button>
+      </div>
+    </div>
+    <div id="pdf-content" style="padding: 24px; color:#333; line-height:1.6; font-size:14px;">
+      <!-- Content populated by JS -->
+    </div>
+  </div>
+</div>
+</body>
+
+</html>

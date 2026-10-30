@@ -1,0 +1,62 @@
+name: yt_kampus_mobile
+description: YT Kampüs rezervasyon uygulaması (skorboard hariç).
+publish_to: none
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  http: ^1.2.2
+  html: ^0.15.7
+  flutter_secure_storage: ^9.2.2
+  intl: ^0.20.2
+  url_launcher: ^6.3.2
+  web: ^1.1.1
+  webview_flutter: ^4.10.0
+  image_picker: ^1.1.2
+  video_player: ^2.9.2
+  share_plus: ^12.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+  fonts:
+    - family: Outfit
+      fonts:
+        - asset: assets/fonts/Outfit.ttf
+          weight: 100
+        - asset: assets/fonts/Outfit.ttf
+          weight: 400
+        - asset: assets/fonts/Outfit.ttf
+          weight: 600
+        - asset: assets/fonts/Outfit.ttf
+          weight: 700
+        - asset: assets/fonts/Outfit.ttf
+          weight: 800
+        - asset: assets/fonts/Outfit.ttf
+          weight: 900
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter.ttf
+          weight: 400
+        - asset: assets/fonts/Inter.ttf
+          weight: 500
+        - asset: assets/fonts/Inter.ttf
+          weight: 600
+        - asset: assets/fonts/Inter.ttf
+          weight: 700
+        - asset: assets/fonts/Inter.ttf
+          weight: 800
+        - asset: assets/fonts/Inter.ttf
+          weight: 900

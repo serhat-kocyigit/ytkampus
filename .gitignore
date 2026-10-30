@@ -1,0 +1,6 @@
+.env
+*.log
+**/node_modules/
+frontend/uploads/
+mobile_app/.dart_tool/
+mobile_app/build/

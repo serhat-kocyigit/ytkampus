@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Giriş Yap | YT Kampüs</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/global.css">
+  <style>
+    body { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:24px; background: var(--bg-900); }
+
+    .bg-glow { position:fixed; width:700px; height:700px; background:radial-gradient(circle, rgba(74,222,128,0.06) 0%, transparent 70%); top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; }
+    .bg-grid { position:fixed; inset:0; z-index:0; pointer-events:none; background-image:linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px); background-size:60px 60px; }
+
+    .auth-wrap { position:relative; z-index:1; width:100%; max-width:460px; }
+    .auth-logo { text-align:center; margin-bottom:32px; }
+    .auth-logo a { font-size:28px; font-weight:900; text-decoration:none; color:var(--text-100); }
+    .auth-logo a span { color:var(--green-400); }
+
+    .auth-card {
+      background: var(--bg-700); border:1px solid var(--border);
+      border-radius: var(--radius-xl); padding:40px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    }
+    .auth-card h2 { font-size:26px; font-weight:800; margin-bottom:6px; }
+    .auth-card p { font-size:14px; color:var(--text-500); margin-bottom:32px; }
+
+    .divider { display:flex; align-items:center; gap:12px; margin:24px 0; }
+    .divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--border); }
+    .divider span { font-size:12px; color:var(--text-500); }
+
+    .auth-footer { text-align:center; margin-top:24px; font-size:14px; color:var(--text-500); }
+    .auth-footer a { color:var(--green-400); text-decoration:none; font-weight:600; }
+
+    .error-msg { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); border-radius:var(--radius-sm); padding:12px 16px; font-size:13px; color:#fca5a5; margin-bottom:20px; display:none; }
+    .error-msg.show { display:block; }
+
+    .input-wrap { position:relative; }
+    .input-wrap .input-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:var(--text-500); font-size:16px; }
+    .input-wrap .input-field { padding-left:42px; }
+
+    @media (max-width: 480px) {
+      .auth-card { padding: 24px; }
+      .auth-card h2 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+  <div class="bg-grid"></div>
+
+  <div class="auth-wrap animate-fadein">
+    <div class="auth-logo">
+      <a href="/index.html">YT<span>Kampüs</span></a>
+    </div>
+
+    <div class="auth-card">
+      <h2>Tekrar Hoş Geldiniz 👋</h2>
+      <p>Hesabınıza giriş yapın ve sahanızı rezerve edin.</p>
+
+      <div class="error-msg" id="error-msg"></div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label for="email">E-Posta veya Kullanıcı Adı</label>
+          <div class="input-wrap">
+            <span class="input-icon">✉</span>
+            <input type="text" id="email" class="input-field" placeholder="ornek@email.com veya kullanıcı adınız" required autocomplete="username">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="password">Şifre</label>
+          <div class="input-wrap">
+            <span class="input-icon">🔒</span>
+            <input type="password" id="password" class="input-field" placeholder="••••••••" required autocomplete="current-password">
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full btn-lg" id="submit-btn">
+          Giriş Yap
+        </button>
+      </form>
+
+      
+
+      <div class="auth-footer">
+        Hesabınız yok mu? <a href="/pages/auth/register.html">Üye Olun</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js?v=security-cookie-2"></script>
+  <script>
+    // Already logged in?
+    if (ProSaha.isLoggedIn()) {
+      window.location.href = ProSaha.isAdmin() ? '/pages/admin/dashboard.html' : '/pages/user/dashboard.html';
+    }
+
+    
+
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submit-btn');
+      const errEl = document.getElementById('error-msg');
+      errEl.classList.remove('show');
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner"></div> Giriş yapılıyor...';
+
+      const { ok, data } = await ProSaha.fetch('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email: document.getElementById('email').value, password: document.getElementById('password').value })
+      });
+
+      if (ok) {
+        ProSaha.setSession(data.token, data.user);
+        ProSaha.toast('Hoş geldiniz, ' + data.user.full_name + '!');
+        setTimeout(() => {
+          if (data.user.role === 'admin') {
+            window.location.href = '/pages/admin/dashboard.html?v=2';
+          } else {
+            if (localStorage.getItem('preselect_field')) {
+              window.location.href = '/pages/user/dashboard.html?page=booking&v=2';
+            } else {
+              window.location.href = '/pages/user/dashboard.html?v=2';
+            }
+          }
+        }, 600);
+      } else {
+        errEl.textContent = data.error || 'Giriş başarısız';
+        errEl.classList.add('show');
+        btn.disabled = false;
+        btn.innerHTML = 'Giriş Yap';
+      }
+    });
+  </script>
+</body>
+</html>

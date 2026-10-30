@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YT Kampüs | Spor ve Yaşam Merkezi</title>
+  <meta name="description" content="YT Kampüs — Futbol, tenis, voleybol, basketbol ve daha fazlası için spor alanları ve maç videoları.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/global.css">
+  <style>
+    /* ── Landing Page Specific ── */
+    body { overflow-x: hidden; font-family: 'Outfit', sans-serif; }
+
+    /* Animated background */
+    .bg-grid {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background-image: linear-gradient(rgba(37,99,235,0.03) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(37,99,235,0.03) 1px, transparent 1px);
+      background-size: 80px 80px;
+    }
+    .bg-glow-1 {
+      position: fixed; width: 800px; height: 800px;
+      background: radial-gradient(circle, rgba(37,99,235,0.04) 0%, transparent 60%);
+      top: -200px; left: -200px; pointer-events: none;
+    }
+    .bg-glow-2 {
+      position: fixed; width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(245,158,11,0.03) 0%, transparent 60%);
+      bottom: -150px; right: -150px; pointer-events: none;
+    }
+    .hero-orbit { position:absolute; right:3%; top:90px; width:420px; height:420px; border:1px dashed rgba(37,99,235,.24); border-radius:50%; pointer-events:none; animation:orbit-spin 28s linear infinite; }
+    .hero-orbit::before, .hero-orbit::after { content:''; position:absolute; width:13px; height:13px; border-radius:50%; background:#f59e0b; box-shadow:0 0 0 8px rgba(245,158,11,.13),0 0 24px rgba(245,158,11,.5); }
+    .hero-orbit::before { top:42px; left:42px; } .hero-orbit::after { right:34px; bottom:56px; background:#2563eb; box-shadow:0 0 0 8px rgba(37,99,235,.12),0 0 24px rgba(37,99,235,.45); }
+    .hero-spark { position:absolute; z-index:2; right:47%; top:23%; color:#f59e0b; font-size:24px; animation:spark-float 3.2s ease-in-out infinite; pointer-events:none; }
+    @keyframes orbit-spin { to { transform:rotate(360deg); } }
+    @keyframes spark-float { 0%,100% { transform:translateY(0) rotate(0); opacity:.75; } 50% { transform:translateY(-16px) rotate(20deg); opacity:1; } }
+
+    /* ── Header ── */
+    .landing-header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 60px; height: 86px;
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      transition: all 0.3s;
+    }
+    .landing-header.scrolled {
+      height: 70px;
+      box-shadow: var(--shadow-sm);
+    }
+    .logo-container {
+      display: flex; align-items: center; gap: 12px;
+      text-decoration: none;
+    }
+    .logo-mark {
+      width: 46px; height: 46px; display: grid; place-items: center; flex: 0 0 auto;
+      border-radius: 14px; color: #fff; background: linear-gradient(145deg, #0b1f49, #1d4ed8);
+      box-shadow: 0 8px 18px rgba(29,78,216,.22); font-weight: 900; font-size: 16px; letter-spacing: -1px;
+      overflow: hidden;
+    }
+    .logo-mark img { display:none; width:100%; height:100%; object-fit:contain; background:#fff; transform-origin:center; }
+    .logo-mark.has-uploaded-logo .logo-mark-fallback { display:none; }
+    .logo-mark.has-uploaded-logo img { display:block; }
+    /* Panelden gelen JPEG/PNG logolardaki geniş beyaz alanı rozetin içinde kırp. */
+    .logo-mark.has-bitmap-logo img { transform:scale(2.05); }
+    .logo-text { font-size: 18px; font-weight: 900; line-height: 1.05; letter-spacing: .2px; color: var(--text-100); }
+    .logo-text small { display:block; margin-top:4px; color:var(--brand-500); font-size:10px; letter-spacing:1.8px; }
+
+    .landing-nav {
+      position: fixed; top: 0; bottom: 0; left: 0; z-index: 1100; width: min(360px, 88vw);
+      display: flex; flex-direction: column; align-items: stretch; gap: 6px; padding: 112px 22px 28px;
+      background: rgba(255,255,255,.98); border-right: 1px solid var(--border);
+      box-shadow: 20px 0 50px rgba(15,23,42,.14); transform: translateX(-105%);
+      transition: transform .32s cubic-bezier(.2,.8,.2,1);
+    }
+    .landing-nav.active { transform: translateX(0); }
+    .landing-nav a {
+      color: var(--text-300); text-decoration: none; padding: 14px 16px;
+      border-radius: var(--radius-sm); font-size: 16px; font-weight: 650;
+      transition: all 0.2s;
+    }
+    .landing-nav a:hover { color: var(--brand-400); background: var(--brand-glow); }
+    .landing-header-actions { display: flex; gap: 12px; align-items: center; margin-left:auto; }
+    .mobile-menu-btn { display: grid; place-items: center; width:44px; height:44px; margin-left:12px; border:1px solid var(--border); border-radius:12px; background:#fff; cursor:pointer; color:var(--text-100); font-size:21px; }
+    .menu-title { position:absolute; top:34px; left:24px; font-size:13px; font-weight:800; color:var(--text-500); letter-spacing:1.5px; }
+
+    /* ── Hero ── */
+    .hero {
+      position: relative; min-height: min(780px, 100vh);
+      display: flex; align-items: center;
+      padding: 118px 60px 54px;
+      overflow:hidden;
+    }
+    .hero::before { content:''; position:absolute; width:760px; height:760px; right:-180px; top:-170px; border-radius:50%; background:radial-gradient(circle, rgba(37,99,235,.18) 0, rgba(37,99,235,.07) 42%, transparent 70%); pointer-events:none; }
+    .hero::after { content:''; position:absolute; right:8%; bottom:54px; width:200px; height:4px; border-radius:99px; background:linear-gradient(90deg,#f59e0b,#2563eb); box-shadow:0 0 28px rgba(37,99,235,.34); }
+    .hero-wrap { position:relative; z-index:1; display: grid; grid-template-columns: 1.1fr 0.9fr; align-items: center; gap: 60px; max-width: 1350px; margin: 0 auto; width: 100%; }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--brand-glow); border: 1px solid rgba(37,99,235,0.2);
+      border-radius: 50px; padding: 8px 20px; margin-bottom: 32px;
+      font-size: 14px; font-weight: 700; color: var(--brand-500);
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .hero-badge::before { content: ''; width: 8px; height: 8px; background: var(--brand-400); border-radius: 50%; box-shadow: 0 0 10px var(--brand-400); animation: pulse-dot 2s infinite; }
+    @keyframes pulse-dot { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+    
+    .hero-title { font-size: 72px; line-height: 1.05; font-weight: 900; margin-bottom: 28px; letter-spacing: -2.5px; color: var(--text-100); }
+    .hero-desc { font-size: 20px; color: var(--text-300); line-height: 1.6; margin-bottom: 48px; max-width: 520px; font-weight: 400; }
+    .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+    .hero-manifesto { display:flex; flex-wrap:wrap; gap:10px; margin:0 0 26px; max-width:620px; }
+    .hero-manifesto span { display:inline-flex; align-items:center; gap:7px; padding:8px 12px; color:#1e3a8a; background:rgba(255,255,255,.75); border:1px solid rgba(37,99,235,.15); border-radius:999px; font-size:13px; font-weight:700; box-shadow:0 6px 16px rgba(15,23,42,.04); }
+    .hero-manifesto span::before { content:'✦'; color:#f59e0b; font-size:12px; }
+    
+    .hero-stats { display: flex; gap: 48px; margin-top: 60px; padding-top: 40px; border-top: 1px solid var(--border); }
+    .stat-item { display: flex; flex-direction: column; gap: 6px; }
+    .stat-number { font-size: 36px; font-weight: 900; color: var(--brand-500); letter-spacing: -1px; }
+    .stat-label { font-size: 14px; color: var(--text-500); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+    .hero-live { display:inline-flex; align-items:center; gap:8px; margin-top:22px; padding:8px 12px; border-radius:10px; background:rgba(255,255,255,.7); border:1px solid rgba(37,99,235,.12); color:#526783; font-size:12px; font-weight:700; }
+    .hero-live i { width:8px; height:8px; border-radius:50%; background:#22c55e; box-shadow:0 0 0 0 rgba(34,197,94,.45); animation:live-pulse 1.8s infinite; }
+    @keyframes live-pulse { 70% { box-shadow:0 0 0 8px rgba(34,197,94,0); } 100% { box-shadow:0 0 0 0 rgba(34,197,94,0); } }
+
+    /* Hero Image */
+    .hero-visual { position: relative; }
+    .visual-chip { position:absolute; z-index:4; display:flex; align-items:center; gap:8px; padding:10px 13px; border:1px solid rgba(255,255,255,.7); border-radius:14px; background:rgba(255,255,255,.9); box-shadow:0 14px 30px rgba(15,23,42,.14); color:#0f172a; font-size:12px; font-weight:800; }
+    .visual-chip strong { color:#2563eb; font-size:17px; line-height:1; }
+    .visual-chip-top { top:-20px; right:-14px; }
+    .visual-chip-bottom { bottom:24px; left:-32px; }
+    .field-card {
+      background: #fff; border: 1px solid var(--border);
+      border-radius: var(--radius-xl); overflow: hidden;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      padding: 12px;
+    }
+    .field-card-inner { border-radius: var(--radius-lg); overflow: hidden; position: relative; }
+    .field-card img { width: 100%; height: 500px; object-fit: cover; display: block; filter: saturate(1.1); transition: transform 0.7s; }
+    .field-card:hover img { transform: scale(1.03); }
+    .academy-logo-panel {
+      min-height: 500px; display:flex; flex-direction:column; justify-content:space-between; position:relative; overflow:hidden;
+      padding:42px; color:#fff; background: radial-gradient(circle at 75% 15%, #2563eb 0, transparent 35%), linear-gradient(135deg,#081b41 0%,#102b66 55%,#1d4ed8 150%);
+    }
+    .academy-hero-image { position:absolute; inset:0; z-index:0; width:100% !important; height:100% !important; object-fit:cover !important; object-position:center; filter:saturate(1.05) contrast(1.03); }
+    .academy-logo-panel::before { content:''; position:absolute; inset:0; z-index:0; background:linear-gradient(135deg,rgba(3,17,48,.72),rgba(8,27,65,.24) 58%,rgba(25,76,205,.45)); }
+    .academy-logo-panel::after { content:''; position:absolute; width:340px; height:340px; right:-100px; bottom:-150px; border:1px solid rgba(255,255,255,.18); border-radius:50%; box-shadow:0 0 0 36px rgba(255,255,255,.04),0 0 0 72px rgba(255,255,255,.03); }
+    .academy-logo-top { display:none; }
+    .academy-crest { position:relative; z-index:1; width:172px; height:172px; margin-top:90px; display:grid; place-items:center; align-self:center; border:2px solid rgba(255,255,255,.82); border-radius:50%; background:rgba(7,21,53,.42); box-shadow:0 18px 48px rgba(0,0,0,.30), inset 0 0 0 9px rgba(255,255,255,.10); text-align:center; font-weight:900; font-size:28px; line-height:.93; letter-spacing:-2px; backdrop-filter:blur(9px); }
+    .academy-crest { animation:crest-float 5s ease-in-out infinite; }
+    @keyframes crest-float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-10px); } }
+    .academy-crest small { display:block; margin-top:14px; color:#fbbf24; letter-spacing:2px; font-size:11px; }
+    .academy-crest .academy-uploaded-logo { display:none; position:absolute; inset:7px; z-index:3; width:calc(100% - 14px) !important; height:calc(100% - 14px) !important; padding:0; border-radius:50%; object-fit:cover !important; background:#061632; box-shadow:0 0 0 5px rgba(255,255,255,.16); }
+    .field-card:hover .academy-uploaded-logo { transform:none; }
+    .academy-logo-copy { position:absolute; z-index:1; left:32px; bottom:32px; max-width:350px; margin:0; padding:15px 17px; border:1px solid rgba(255,255,255,.25); border-radius:16px; background:rgba(3,16,43,.54); box-shadow:0 10px 30px rgba(0,0,0,.18); backdrop-filter:blur(10px); }
+    .academy-logo-copy strong { font-size:16px; letter-spacing:-.2px; }
+    .academy-logo-copy p { margin:7px 0 0; color:#e2e8f0; font-size:13px; line-height:1.45; }
+    .field-card-overlay {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background: linear-gradient(to top, rgba(15,23,42,0.95) 0%, transparent 100%);
+      padding: 40px 32px 32px;
+    }
+    .field-tag {
+      display: inline-block; background: var(--brand-400); color: #fff;
+      font-size: 12px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 6px 14px; border-radius: 6px; margin-bottom: 12px;
+    }
+    .field-card-title { font-size: 24px; font-weight: 800; color: #fff; }
+    .field-card-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; }
+
+    /* ── Features Strip ── */
+    .features-strip {
+      position: relative; z-index: 1;
+      background: #fff; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      padding: 32px 60px;
+      display: flex; align-items: center; gap: 80px; justify-content: center;
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+    }
+    .strip-item { display: flex; align-items: center; gap: 14px; white-space: nowrap; color: var(--text-300); font-size: 16px; font-weight: 600; }
+    .strip-item span { font-size: 24px; }
+
+    /* ── About Section ── */
+    .section { position: relative; z-index: 1; padding: 140px 60px; }
+    .section-label {
+      display: inline-flex; align-items: center; gap: 12px;
+      font-size: 13px; font-weight: 800; letter-spacing: 3px; text-transform: uppercase;
+      color: var(--brand-500); margin-bottom: 20px;
+    }
+    .section-label::before { content: ''; width: 30px; height: 3px; background: var(--brand-500); border-radius: 3px; }
+    .section-heading { font-size: 52px; font-weight: 900; line-height: 1.1; margin-bottom: 24px; letter-spacing: -1.5px; color: var(--text-100); }
+    .section-sub { font-size: 18px; color: var(--text-300); max-width: 560px; line-height: 1.8; }
+
+    .features-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 70px;
+    }
+    .feat-card {
+      background: #fff; border: 1px solid var(--border);
+      border-radius: var(--radius-xl); padding: 28px;
+      transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: var(--shadow-sm);
+    }
+    .feat-card:hover { border-color: var(--brand-400); transform: translateY(-8px); box-shadow: var(--shadow-brand); }
+    .feat-card img {
+      width: 100%; height: 190px; object-fit: cover; object-position: center top;
+      border-radius: var(--radius-md); margin-bottom: 24px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .feat-title { font-size: 22px; font-weight: 800; margin-bottom: 12px; color: var(--text-100); letter-spacing: -0.5px; }
+    .feat-desc { font-size: 15px; color: var(--text-500); line-height: 1.7; }
+
+    /* ── CTA Section ── */
+    .cta-section {
+      position: relative; z-index: 1; margin: 0 60px 100px;
+      background: #0f172a;
+      border-radius: var(--radius-xl);
+      padding: 80px 80px; text-align: center;
+      overflow: hidden;
+      box-shadow: 0 20px 40px rgba(15,23,42,0.15);
+    }
+    .cta-section::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at center, rgba(37,99,235,0.2) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .cta-section h2 { font-size: 56px; font-weight: 900; margin-bottom: 20px; letter-spacing: -2px; color: #fff; }
+    .cta-section p { font-size: 19px; color: #94a3b8; margin-bottom: 40px; max-width: 600px; margin-inline: auto; }
+    .cta-section .cta-buttons { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; position: relative; z-index: 2; }
+    .contact-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 340px)); gap:18px; justify-content:center; margin:34px auto 32px; position:relative; z-index:2; text-align:left; }
+    .contact-card { min-height:170px; padding:24px; border:1px solid rgba(255,255,255,0.18); border-radius:18px; background:rgba(51,65,85,0.75); box-shadow:0 14px 30px rgba(0,0,0,0.16); }
+    .contact-card h3 { display:flex; align-items:center; gap:9px; margin:0 0 16px; font-size:18px; color:#fff; }
+    .contact-card p { max-width:none; margin:0; color:#cbd5e1; font-size:14px; line-height:1.7; }
+    .contact-card a { color:#fff; text-decoration:none; }
+    .contact-card a:hover { color:#fbbf24; }
+    .whatsapp-actions { display:flex; gap:8px; flex-wrap:wrap; margin:16px 0; }
+    .whatsapp-link { display:inline-flex; align-items:center; gap:6px; padding:8px 10px; border-radius:9px; background:#25D366; color:#052e16 !important; font-size:12px; font-weight:800; transition:transform .2s, box-shadow .2s; }
+    .whatsapp-link:hover { color:#052e16 !important; transform:translateY(-2px); box-shadow:0 8px 16px rgba(37,211,102,.22); }
+    .location-link { display:inline-flex; margin-top:16px; color:#fbbf24 !important; font-weight:800; text-decoration:underline !important; text-underline-offset:4px; }
+    .btn-light { background: #fff; color: #0f172a; }
+    .btn-light:hover { background: #f8fafc; transform: translateY(-2px); box-shadow: 0 10px 20px rgba(255,255,255,0.1); }
+    .btn-outline-light { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.2); }
+    .btn-outline-light:hover { background: rgba(255,255,255,0.1); }
+
+    /* ── Footer ── */
+    footer {
+      position: relative; z-index: 1;
+      border-top: 1px solid var(--border); padding: 50px 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      color: var(--text-500); font-size: 14px; background: #fff;
+    }
+    footer a { color: var(--text-500); text-decoration: none; font-weight: 500; }
+    footer a:hover { color: var(--brand-500); }
+    .creator-credit { margin-top: 7px; color: var(--text-500); font-size: 12px; line-height: 1.55; }
+    .creator-credit strong { color: var(--text-700); }
+    .creator-credit a { color: var(--brand-500); font-weight: 700; white-space: nowrap; }
+    .instagram-qr { display:flex; align-items:center; gap:10px; text-align:left; }
+    .instagram-qr img { width:68px; height:68px; display:block; border:1px solid var(--border); border-radius:10px; padding:4px; background:#fff; transition:transform .2s, box-shadow .2s; }
+    .instagram-qr:hover img { transform:translateY(-2px); box-shadow:var(--shadow-md); }
+    .instagram-qr strong { display:block; color:var(--text-800); font-size:13px; }
+    .instagram-qr span { display:block; margin-top:3px; color:var(--text-500); font-size:12px; }
+
+    /* Animation & Marquee */
+    .hero-content, .hero-visual, .feat-card, .gallery-section { opacity: 0; }
+    
+    .gallery-marquee { width: 100vw; margin-left: calc(-50vw + 50%); overflow: hidden; display: flex; padding: 30px 0; position: relative; }
+    .gallery-marquee::before, .gallery-marquee::after { content: ""; position: absolute; top: 0; bottom: 0; width: 200px; z-index: 2; pointer-events: none; }
+    .gallery-marquee::before { left: 0; background: linear-gradient(to right, var(--bg-900), transparent); }
+    .gallery-marquee::after { right: 0; background: linear-gradient(to left, var(--bg-900), transparent); }
+    .marquee-track { display: flex; gap: 24px; animation: scroll 50s linear infinite; width: max-content; }
+    .marquee-track:hover { animation-play-state: paused; }
+    .marquee-item { width: 360px; height: 260px; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--border); flex-shrink: 0; box-shadow: var(--shadow-sm); }
+    .marquee-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s cubic-bezier(0.4,0,0.2,1); }
+    .marquee-item:hover img { transform: scale(1.08); }
+    @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(calc(-50% - 12px)); } }
+    @media (prefers-reduced-motion: reduce) { *,*::before,*::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; scroll-behavior:auto !important; } }
+
+    /* ── Lightbox Styles ── */
+    .lightbox-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(15, 23, 42, 0.95); z-index: 9999;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+      backdrop-filter: blur(10px);
+    }
+    .lightbox-overlay.active { opacity: 1; pointer-events: all; }
+    .lightbox-img {
+      max-width: 90vw; max-height: 90vh;
+      border-radius: 12px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      transform: scale(0.9); transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+      object-fit: contain;
+    }
+    .lightbox-overlay.active .lightbox-img { transform: scale(1); }
+    .lightbox-close {
+      position: absolute; top: 24px; right: 40px;
+      color: #fff; font-size: 48px; font-weight: 300; line-height: 1;
+      cursor: pointer; transition: color 0.2s; z-index: 10000;
+    }
+    .lightbox-close:hover { color: var(--brand-400); }
+    .clickable-img:hover { filter: brightness(1.1); transform: scale(1.02); }
+
+    /* ── Responsive Media Queries ── */
+    @media (max-width: 1200px) {
+      .landing-header { padding:0 24px; }
+      .landing-header-actions .btn { padding:10px 16px; }
+      .hero-wrap { grid-template-columns: 1fr; text-align: center; gap: 40px; }
+      .hero-desc { margin: 0 auto 40px; }
+      .hero-actions { justify-content: center; }
+      .hero-stats { justify-content: center; }
+      .features-strip { gap: 40px; flex-wrap: wrap; }
+      #hakkimizda > div { grid-template-columns: 1fr !important; text-align: center; gap: 40px !important; }
+      #hakkimizda .section-sub { margin: 0 auto; }
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    
+    @media (max-width: 900px) {
+      .landing-header { padding: 0 16px; gap: 8px; }
+      
+      /* Mobile Overlay */
+      .mobile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s; backdrop-filter: blur(2px); }
+      .mobile-overlay.active { opacity: 1; pointer-events: all; }
+
+      .landing-nav { padding-top:96px; }
+      
+      .landing-header-actions { margin-left: auto; gap: 8px; }
+      .landing-header-actions .btn { padding: 8px 12px; font-size: 13px; }
+      .logo-text { font-size: 14px; }
+      .logo-mark { width:38px; height:38px; font-size:13px; }
+      
+      .hero { padding: 120px 20px 40px; }
+      .hero::after { display:none; }
+      .hero-title { font-size: 48px; }
+      .section { padding: 80px 20px; }
+      .features-grid { grid-template-columns: 1fr; }
+      .features-strip { display: none; }
+      .cta-section { margin: 0 20px 60px; padding: 60px 30px; }
+      .cta-section h2 { font-size: 36px; }
+      .contact-grid { grid-template-columns:1fr; }
+      footer { flex-direction: column; gap: 20px; padding: 40px 20px; text-align: center; }
+    }
+    
+    @media (max-width: 480px) {
+      .hero-title { font-size: 36px; }
+      .hero-stats { flex-direction: column; gap: 20px; align-items: center; }
+      .hero-actions { flex-direction: column; width: 100%; }
+      .hero-actions .btn { width: 100%; }
+      .field-card img { height: 300px; }
+      .section-heading { font-size: 36px; }
+    }
+
+    /* ── Final navigation and small-screen overrides ── */
+    .landing-nav {
+      height: 100dvh !important;
+      min-height: 100vh !important;
+      background: #fff !important;
+      overflow-y: auto;
+      isolation: isolate;
+    }
+    .landing-nav::before {
+      content: ''; position:absolute; inset:0; z-index:-1;
+      background: linear-gradient(180deg, #fff 0%, #f8fbff 100%);
+    }
+    .nav-close {
+      position:absolute; top:24px; right:20px; width:40px; height:40px; border:0;
+      border-radius:12px; background:#f1f5f9; color:#0f172a; font-size:24px; cursor:pointer;
+    }
+    .landing-nav a { display:flex; align-items:center; min-height:52px; }
+    .landing-nav a:first-of-type { margin-top:18px; }
+    .drawer-actions { display:none; margin-top:auto; padding-top:22px; border-top:1px solid var(--border); gap:10px; }
+    .drawer-actions .btn { flex:1; padding:12px 10px; font-size:14px; }
+    .video-library-card { max-width:1250px; margin:0 auto; border-radius:32px; padding:48px; background:linear-gradient(135deg,#0b1f49,#1d4ed8); color:#fff; box-shadow:0 22px 44px rgba(29,78,216,.22); display:grid; grid-template-columns:1.25fr .75fr; gap:32px; align-items:center; }
+    .promise-row { max-width:1250px; margin:0 auto; display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+    .promise-card { padding:20px; border:1px solid var(--border); border-radius:18px; background:rgba(255,255,255,.74); box-shadow:var(--shadow-sm); }
+    .promise-card strong { display:block; margin-bottom:6px; font-size:15px; color:var(--text-100); }
+    .promise-card span { color:var(--text-500); font-size:13px; line-height:1.5; }
+
+    @media (max-width: 600px) {
+      .landing-header { height:72px; padding:0 14px; }
+      .landing-header.scrolled { height:64px; }
+      .logo-container { gap:8px; min-width:0; }
+      .logo-text { font-size:13px; white-space:nowrap; }
+      .logo-text small { font-size:8px; letter-spacing:1px; }
+      .logo-mark { width:36px; height:36px; border-radius:11px; }
+      .landing-header-actions { display:none; }
+      .mobile-menu-btn { margin-left:auto; width:42px; height:42px; }
+      .landing-nav { width:min(330px, 88vw); padding:92px 16px 20px; }
+      .landing-nav a { padding:13px 14px; font-size:15px; }
+      .drawer-actions { display:flex; }
+      .hero { min-height:auto; padding:108px 18px 48px; }
+      .hero::before { width:430px; height:430px; right:-250px; top:40px; }
+      .hero-title { font-size:42px; letter-spacing:-1.7px; }
+      .hero-desc { font-size:16px; margin-bottom:30px; }
+      .hero-manifesto { gap:7px; margin-bottom:22px; }
+      .hero-manifesto span { padding:7px 10px; font-size:11px; }
+      .hero-stats { margin-top:38px; padding-top:26px; gap:20px; }
+      .stat-number { font-size:27px; }
+      .stat-label { font-size:10px; letter-spacing:.6px; }
+      .field-card { padding:8px; border-radius:22px; }
+      .academy-logo-panel { min-height:350px; padding:26px; }
+      .academy-crest { width:138px; height:138px; margin-top:22px; font-size:22px; }
+      .academy-logo-copy { left:18px; right:18px; bottom:18px; max-width:none; }
+      .visual-chip { padding:8px 10px; font-size:10px; } .visual-chip strong { font-size:14px; }
+      .visual-chip-top { top:-11px; right:-6px; } .visual-chip-bottom { left:-6px; bottom:12px; }
+      .section { padding:72px 18px; }
+      .section-heading { font-size:34px; }
+      .section-sub { font-size:16px; }
+      .features-grid { gap:18px; }
+      .feat-card { padding:18px; }
+      .feat-card img, .feat-card div[style*="height:260px"] { height:210px !important; }
+      .video-library-card { grid-template-columns:1fr; padding:30px 24px; gap:24px; text-align:left; }
+      .video-library-card h2 { font-size:31px !important; }
+      .video-library-card > div:last-child { justify-self:start !important; display:flex; align-items:center; gap:14px; }
+      .video-library-card > div:last-child > div { font-size:38px !important; margin:0 !important; }
+      .promise-row { grid-template-columns:1fr; gap:10px; }
+      .promise-card { padding:16px; }
+      .cta-section { margin:0 18px 52px; padding:46px 20px; border-radius:24px; }
+      .cta-section h2 { font-size:34px; }
+      .contact-card { min-height:auto; padding:20px; }
+      footer { padding:32px 18px; }
+      footer > div:last-child { flex-wrap:wrap; justify-content:center; gap:14px !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-grid"></div>
+  <div class="bg-glow-1"></div>
+  <div class="bg-glow-2"></div>
+
+  <!-- HEADER -->
+  <header class="landing-header" id="header">
+    <a href="/" class="logo-container">
+      <div class="logo-mark" aria-hidden="true"><span class="logo-mark-fallback">YT</span><img data-site-logo alt="YT Kampüs logosu"></div>
+      <div class="logo-text">YT KAMPÜS<small>SPOR · SANAT · YAŞAM</small></div>
+    </a>
+    <nav class="landing-nav" id="mobile-nav">
+      <span class="menu-title">MENÜ</span>
+      <button class="nav-close" id="nav-close" type="button" aria-label="Menüyü kapat">×</button>
+      <a href="/mac-izle.html" style="color:#1d4ed8; font-weight:800;">🎥 Maç Videoları</a>
+      <a href="#rezervasyonlar">🏟️ Sahalar</a>
+      <a href="#hakkimizda">✨ Hakkımızda</a>
+      <a href="#akademiler">🎓 Akademiler</a>
+      <a href="#galeri">🖼️ Galeri</a>
+      <a href="#iletisim">✉️ İletişim</a>
+      <div class="drawer-actions" id="drawer-actions">
+        <a href="/pages/auth/login.html" class="btn btn-secondary">Giriş Yap</a>
+        <a href="/pages/auth/register.html" class="btn btn-primary">Üye Ol</a>
+      </div>
+    </nav>
+    <div class="landing-header-actions" id="header-actions">
+      <a href="/pages/auth/login.html" class="btn btn-secondary">Giriş Yap</a>
+      <a href="/pages/auth/register.html" class="btn btn-primary">Üye Ol</a>
+    </div>
+    <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Menüyü aç" aria-expanded="false">☰</button>
+  </header>
+  <div class="mobile-overlay" id="mobile-overlay"></div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-orbit" aria-hidden="true"></div>
+    <div class="hero-spark" aria-hidden="true">✦</div>
+    <div class="hero-wrap">
+      <div class="hero-content animate-fadeup">
+        <div class="hero-badge">KAYSERİ'NİN SPOR VE YAŞAM KAMPÜSÜ</div>
+        <h1 class="hero-title">Her sahada <br><span class="gradient-text">anını yaşa.</span></h1>
+        <p class="hero-desc">INTER Academy Türkiye Kayseri; futbol akademisinden tenis, voleybol ve basketbola uzanan modern spor alanlarıyla, maçlarınızı da tek noktada izleyebileceğiniz yeni nesil bir kampüs deneyimi sunar.</p>
+        <div class="hero-manifesto" aria-label="YT Kampüs yaklaşımı">
+          <span>Oyun burada başlar.</span>
+          <span>Her yaşa, her hedefe alan aç.</span>
+          <span>Sahada kal, anını kaydet.</span>
+        </div>
+        <div class="hero-actions">
+          <a href="/pages/auth/register.html" class="btn btn-primary btn-lg">Kayıt Ol & Rezervasyon</a>
+          <a href="/mac-izle.html" class="btn btn-secondary btn-lg">Maç Videolarını İzle</a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-number" data-count="5" data-suffix="+">5+</span>
+            <span class="stat-label">Farklı Branş</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number" data-count="1000" data-suffix="+">1000+</span>
+            <span class="stat-label">Aktif Öğrenci</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number">Uzman</span>
+            <span class="stat-label">Eğitmen Kadrosu</span>
+          </div>
+        </div>
+        <div class="hero-live"><i></i><span>Rezervasyon ve maç videoları tek merkezde</span></div>
+      </div>
+
+      <div class="hero-visual animate-fadeup" style="animation-delay: 0.2s;">
+        <div class="visual-chip visual-chip-top"><strong>⚡</strong><span>Yeni nesil<br>spor deneyimi</span></div>
+        <div class="field-card">
+          <div class="field-card-inner">
+            <div class="academy-logo-panel">
+              <img data-site-image="hero_image" class="academy-hero-image" src="assets/images/1.jpg" alt="INTER Academy Türkiye Kayseri spor alanı">
+              <div class="academy-crest"><span>INTER<br>ACADEMY<small>TÜRKİYE · KAYSERİ</small></span><img data-site-image="academy_logo" class="academy-uploaded-logo" src="assets/images/inter-academy-logo.webp" alt="INTER Academy Türkiye Kayseri logosu" style="display:block;"></div>
+              <div class="academy-logo-copy"><strong>INTER Academy Türkiye Kayseri</strong><p>Futbolun enerjisi, eğitimin disiplini ve sahadaki gelişim bir arada.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES STRIP -->
+  <div class="features-strip" style="flex-wrap: wrap; padding: 32px 40px; gap: 40px;">
+    <div class="strip-item"><span>⚽</span> Futbol Akademisi & Saha</div>
+    <div class="strip-item"><span>🎾</span> Tenis Kortu & Dersleri</div>
+    <div class="strip-item"><span>🏐</span> Voleybol Sahası</div>
+    <div class="strip-item"><span>🏀</span> Basketbol Sahası</div>
+    <div class="strip-item"><span>🎵</span> Müzik Stüdyosu</div>
+    <div class="strip-item"><span>🎨</span> Sanat Merkezi</div>
+    <div class="strip-item"><span>💃</span> Dans Okulu</div>
+    <div class="strip-item"><span>🏓</span> Padel Kortu</div>
+    <div class="strip-item"><span>🏊</span> Havuz</div>
+    <div class="strip-item"><span>🎥</span> Tüm Sahalardan Maç Videoları</div>
+  </div>
+
+  <section class="section" style="padding-bottom:80px; padding-top:100px;">
+    <div class="video-library-card">
+      <div><div class="section-label" style="color:#bfdbfe;">MAÇ VİDEOLARI</div><h2 style="font-size:42px; line-height:1.1; letter-spacing:-1.5px; margin-bottom:16px;">Sadece futbol değil,<br>tüm sahalar tek ekranda.</h2><p style="color:#dbeafe; line-height:1.7; max-width:620px;">Rezervasyon yaptığınız futbol, tenis, voleybol ve basketbol sahalarının kayıtlarına tarih, saat ve saha seçerek güvenle ulaşın. Önemli anları kesit olarak kaydedin.</p></div>
+      <div style="justify-self:end; text-align:center;"><div style="font-size:70px; margin-bottom:12px;">▶</div><a href="/mac-izle.html" class="btn btn-light">Videolara Git</a></div>
+    </div>
+    <div class="promise-row" style="margin-top:18px;">
+      <div class="promise-card"><strong>⚡ Enerjini sahaya taşı</strong><span>Günün temposundan çık, kendi oyununa dön.</span></div>
+      <div class="promise-card"><strong>🤝 Birlikte daha güçlüyüz</strong><span>Takımınla buluş, antrenmanınla geliş.</span></div>
+      <div class="promise-card"><strong>🎬 Anların kaybolmasın</strong><span>Maç videolarına eriş, en güzel kesitlerini sakla.</span></div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="hakkimizda" class="section">
+    <div style="max-width:1250px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:80px; align-items:center;">
+      <div class="animate-fadeup">
+        <div class="section-label">YT KAMPÜS</div>
+        <h2 class="section-heading">Sadece bir tesis değil, <span class="gradient-text">yeni bir yaşam stili.</span></h2>
+        <h3 style="font-size: 28px; color: var(--brand-500); margin-bottom: 20px; font-weight: 800; letter-spacing: -0.5px;">"Spor ve Sanatla Sağlıklı Bir Yaşam"</h3>
+        <p class="section-sub">Spor ve sanatın iyileştirici gücünü kusursuz bir mimaride bir araya getiren YT Kampüs'te; çocuklar, gençler ve yetişkinler için özenle tasarlanmış eğitim programları sunuyoruz.</p>
+      </div>
+      <div class="animate-fadeup" style="animation-delay: 0.2s; border-radius:var(--radius-xl); overflow:hidden; border:8px solid #fff; box-shadow:var(--shadow-card); background:#0f172a; height:450px;">
+        <img data-site-image="about_image" src="assets/images/2.jpg" alt="Görsel Alanı 2 - Hakkımızda" style="width:100%; height:100%; object-fit:cover; display:block;">
+      </div>
+    </div>
+  </section>
+
+  <!-- ACADEMIES / FEATURES -->
+  <section id="akademiler" class="section" style="padding-top:0;">
+    <div style="max-width:1300px; margin:0 auto; text-align:center;">
+      <div class="section-label">YT Kampüs Branşları</div>
+      <h2 class="section-heading">Size uygun alanı <span class="gradient-text">keşfedin</span></h2>
+      <p class="section-sub" style="margin:0 auto; margin-bottom: 24px;">Saha rezervasyonunuzu online oluşturun; akademi ve eğitim başvuruları için doğrudan WhatsApp’tan bize ulaşın.</p>
+      <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:0 auto 42px;">
+        <a href="#rezervasyonlar" class="btn btn-secondary">Saha & Kort Rezervasyonu</a>
+        <a href="#akademi-basvurulari" class="btn btn-primary">Akademi Başvuruları</a>
+      </div>
+      
+      <div id="rezervasyonlar" class="section-label" style="margin-top:0;">Online Rezervasyon</div>
+      <div class="features-grid" style="margin-top:26px;">
+        <!-- FUTBOL SAHASI (UEFA) -->
+        <div class="feat-card">
+          <div style="width:100%; height:260px; border-radius:var(--radius-md); margin-bottom:20px; overflow:hidden; background:#0f172a;">
+            <img data-field-image="1" src="assets/images/3.jpg" alt="Görsel Alanı 3 - Futbol Sahası" style="width:100%; height:100%; object-fit:cover; display:block;">
+          </div>
+          <div class="feat-title">Futbol Sahası</div>
+          <p class="feat-desc">UEFA standartlarında profesyonel kapalı futbol sahası. Maçlarınız ve takım antrenmanlarınız için online rezervasyon oluşturun.</p>
+          <button onclick="handleReservation(1)" class="btn btn-primary" style="width:100%; margin-top:16px;">Rezervasyon Yap</button>
+        </div>
+
+        <!-- HALI SAHA INTER -->
+        <div class="feat-card">
+          <div style="width:100%; height:260px; border-radius:var(--radius-md); margin-bottom:20px; overflow:hidden; background:#0f172a;">
+            <img data-field-image="2" src="assets/images/4.jpg" alt="Görsel Alanı 4 - Halı Saha INTER" style="width:100%; height:100%; object-fit:cover; display:block;">
+          </div>
+          <div class="feat-title">Halı Saha (INTER)</div>
+          <p class="feat-desc">Yüksek kalite sentetik çim zeminli, profesyonel gece aydınlatmalı açık ve kapalı halı saha alanı.</p>
+          <button onclick="handleReservation(2)" class="btn btn-primary" style="width:100%; margin-top:16px;">Rezervasyon Yap</button>
+        </div>
+
+        <!-- TENİS KORTU -->
+        <div class="feat-card">
+          <div style="width:100%; height:260px; border-radius:var(--radius-md); margin-bottom:20px; overflow:hidden; background:#0f172a;">
+            <img data-field-image="3" src="assets/images/5.jpg" alt="Görsel Alanı 5 - Tenis Kortu" style="width:100%; height:100%; object-fit:cover; display:block;">
+          </div>
+          <div class="feat-title">Tenis Kortu</div>
+          <p class="feat-desc">Uluslararası standartlarda akrilik zeminli, profesyonel gece aydınlatmalı açık ve kapalı tenis kortu.</p>
+          <button onclick="handleReservation(3)" class="btn btn-primary" style="width:100%; margin-top:16px;">Rezervasyon Yap</button>
+        </div>
+
+        <!-- VOLEYBOL SAHASI -->
+        <div class="feat-card">
+          <div style="width:100%; height:260px; border-radius:var(--radius-md); margin-bottom:20px; overflow:hidden; background:#0f172a;">
+            <img data-field-image="4" src="assets/images/6.jpg" alt="Görsel Alanı 6 - Voleybol Sahası" style="width:100%; height:100%; object-fit:cover; display:block;">
+          </div>
+          <div class="feat-title">Voleybol Sahası</div>
+          <p class="feat-desc">Uluslararası ölçülere sahip, kaymaz profesyonel kaplamalı kapalı salon voleybol sahası.</p>
+          <button onclick="handleReservation(4)" class="btn btn-primary" style="width:100%; margin-top:16px;">Rezervasyon Yap</button>
+        </div>
+
+        <!-- BASKETBOL SAHASI -->
+        <div class="feat-card">
+          <div style="width:100%; height:260px; border-radius:var(--radius-md); margin-bottom:20px; overflow:hidden; background:#0f172a;">
+            <img data-field-image="5" src="assets/images/7.jpg" alt="Görsel Alanı 7 - Basketbol Sahası" style="width:100%; height:100%; object-fit:cover; display:block;">
+          </div>
+          <div class="feat-title">Basketbol Sahası</div>
+          <p class="feat-desc">Tam saha potalı, şok emici parke zeminli kapalı basketbol alanı ve antrenman sahası.</p>
+          <button onclick="handleReservation(5)" class="btn btn-primary" style="width:100%; margin-top:16px;">Rezervasyon Yap</button>
+        </div>
+
+        <!-- MÜZİK STÜDYOSU -->
+        <div class="feat-card">
+          <div style="width:100%; height:260px; border-radius:var(--radius-md); margin-bottom:20px; overflow:hidden; background:#0f172a;">
+            <img data-field-image="6" src="assets/images/10.jpg" alt="Görsel Alanı 10 - Müzik Stüdyosu" style="width:100%; height:100%; object-fit:cover; display:block;">
+          </div>
+          <div class="feat-title">Müzik Stüdyosu</div>
+          <p class="feat-desc">Akustik yalıtımlı, profesyonel ses kayıt ve enstrüman çalışma imkanı sunan modern stüdyo alanı.</p>
+          <button onclick="handleReservation(6)" class="btn btn-primary" style="width:100%; margin-top:16px;">Rezervasyon Yap</button>
+        </div>
+
+        <!-- SANAT ATÖLYESİ -->
+        <div class="feat-card">
+          <div style="width:100%; height:260px; border-radius:var(--radius-md); margin-bottom:20px; overflow:hidden; background:#0f172a;">
+            <img data-field-image="7" src="assets/images/11.jpg" alt="Görsel Alanı 11 - Sanat Atölyesi" style="width:100%; height:100%; object-fit:cover; display:block;">
+          </div>
+          <div class="feat-title">Sanat Atölyesi (Resim)</div>
+          <p class="feat-desc">Geniş, doğal ışık alan, temel ve yaratıcı sanat çalışmalarına uygun ilham verici atölye alanı.</p>
+          <button onclick="handleReservation(7)" class="btn btn-primary" style="width:100%; margin-top:16px;">Rezervasyon Yap</button>
+        </div>
+
+        <!-- DANS STÜDYOSU -->
+        <div class="feat-card">
+          <div style="width:100%; height:260px; border-radius:var(--radius-md); margin-bottom:20px; overflow:hidden; background:#0f172a;">
+            <img data-field-image="8" src="assets/images/12.jpg" alt="Görsel Alanı 12 - Dans Stüdyosu" style="width:100%; height:100%; object-fit:cover; display:block;">
+          </div>
+          <div class="feat-title">Dans Stüdyosu</div>
+          <p class="feat-desc">Aynalı, özel dans parkeli ve yüksek kaliteli ses sistemine sahip geniş prova ve ders salonu.</p>
+          <button onclick="handleReservation(8)" class="btn btn-primary" style="width:100%; margin-top:16px;">Rezervasyon Yap</button>
+        </div>
+
+        <!-- PADEL KORTU · YAKINDA -->
+        <div class="feat-card">
+          <div style="width:100%; height:260px; border-radius:var(--radius-md); margin-bottom:20px; overflow:hidden; background:#0f172a; position:relative;">
+            <img data-field-image="9" src="assets/images/8.jpg" alt="Görsel Alanı 8 - Padel Kortu" style="width:100%; height:100%; object-fit:cover; display:block;">
+            <span style="position:absolute; top:12px; right:12px; background:#f59e0b; color:#000; font-weight:800; font-size:11px; padding:4px 10px; border-radius:6px; letter-spacing:0.5px;">YAKINDA</span>
+          </div>
+          <div class="feat-title">Padel Kortu</div>
+          <p class="feat-desc">Güçlendirilmiş cam duvarlı, son teknoloji zemin kaplamalı yeni nesil profesyonel padel kortu.</p>
+          <a href="https://wa.me/905532111358?text=Merhaba%2C%20Padel%20Kortu%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum." target="_blank" rel="noopener" class="btn btn-secondary" style="width:100%; margin-top:16px; display:block; text-align:center;">Çok Yakında · Bilgi Al</a>
+        </div>
+
+        <!-- YÜZME HAVUZU · YAKINDA -->
+        <div class="feat-card">
+          <div style="width:100%; height:260px; border-radius:var(--radius-md); margin-bottom:20px; overflow:hidden; background:#0f172a; position:relative;">
+            <img data-field-image="10" src="assets/images/9.jpg" alt="Görsel Alanı 9 - Yüzme Havuzu" style="width:100%; height:100%; object-fit:cover; display:block;">
+            <span style="position:absolute; top:12px; right:12px; background:#f59e0b; color:#000; font-weight:800; font-size:11px; padding:4px 10px; border-radius:6px; letter-spacing:0.5px;">YAKINDA</span>
+          </div>
+          <div class="feat-title">Yüzme Havuzu</div>
+          <p class="feat-desc">Yarı olimpik, hijyenik ve tam donanımlı kapalı yüzme havuzu ve su sporları kompleksi.</p>
+          <a href="https://wa.me/905532111358?text=Merhaba%2C%20Havuz%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum." target="_blank" rel="noopener" class="btn btn-secondary" style="width:100%; margin-top:16px; display:block; text-align:center;">Çok Yakında · Bilgi Al</a>
+        </div>
+      </div>
+
+      <div id="akademi-basvurulari" class="section-label" style="margin-top:72px;">Akademi Başvuruları</div>
+      <div class="features-grid" style="margin-top:26px;">
+        <!-- YT TENİS AKADEMİ -->
+        <div class="feat-card">
+          <div style="width:100%; height:260px; border-radius:var(--radius-md); margin-bottom:20px; overflow:hidden; background:#0f172a;">
+            <img data-site-image="academy_tennis" src="assets/images/13.jpg" alt="Görsel Alanı 13 - YT Tenis Akademi" style="width:100%; height:100%; object-fit:cover; display:block;">
+          </div>
+          <div class="feat-title">YT Tenis Akademi</div>
+          <p class="feat-desc">Çocuk akademisi, özel ders ve grup çalışmalarıyla her seviyeye uygun tenis eğitimi.</p>
+          <a href="https://wa.me/905532111358?text=Merhaba%2C%20YT%20Tenis%20Akademi%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum." target="_blank" rel="noopener" class="btn btn-primary" style="width:100%;margin-top:16px;display:block;text-align:center;" aria-label="YT Tenis Akademi hakkında WhatsApp'tan bilgi al">WhatsApp’tan Başvur</a>
+        </div>
+
+        <!-- INTER AKADEMİ -->
+        <div class="feat-card">
+          <div style="width:100%; height:260px; overflow:hidden; border-radius:var(--radius-md); margin-bottom:20px; background:#0f172a;">
+            <img data-site-image="academy_inter" src="assets/images/14.jpg" alt="Görsel Alanı 14 - Inter Akademi" style="width:100%; height:100%; object-fit:cover; display:block;">
+          </div>
+          <div class="feat-title">Inter Akademi</div>
+          <p class="feat-desc">Çocuklar ve gençler için teknik gelişim, koordinasyon ve takım oyununa odaklanan futbol eğitimleri.</p>
+          <a href="https://wa.me/905532111358?text=Merhaba%2C%20Inter%20Akademi%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum." target="_blank" rel="noopener" class="btn btn-primary" style="width:100%;margin-top:16px;display:block;text-align:center;" aria-label="Inter Akademi hakkında WhatsApp'tan bilgi al">WhatsApp’tan Başvur</a>
+        </div>
+
+        <!-- SANAT MERKEZİ EĞİTİMİ -->
+        <div class="feat-card">
+          <div style="width:100%; height:260px; border-radius:var(--radius-md); margin-bottom:20px; overflow:hidden; background:#0f172a;">
+            <img data-site-image="academy_art" src="assets/images/16.jpg" alt="Görsel Alanı 16 - Sanat Merkezi Eğitimi" style="width:100%; height:100%; object-fit:cover; display:block;">
+          </div>
+          <div class="feat-title">Sanat Merkezi (Resim Eğitimi)</div>
+          <p class="feat-desc">Ressam Hasan Gürpınar ile Çocuk, Genç ve Yetişkin gruplarına özel temel sanat, desen ve yaratıcı boya atölyeleri.</p>
+          <a href="https://wa.me/905532111358?text=Merhaba%2C%20Sanat%20Merkezi%20%28Resim%20E%C4%9Fitimi%29%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum." target="_blank" rel="noopener" class="btn btn-primary" style="width:100%; margin-top:16px; display:block; text-align:center;" aria-label="Sanat Merkezi Resim Eğitimi hakkında WhatsApp'tan bilgi al">WhatsApp’tan Başvur</a>
+        </div>
+        
+        <!-- DANS OKULU -->
+        <div class="feat-card">
+          <div style="width:100%; height:260px; border-radius:var(--radius-md); margin-bottom:20px; overflow:hidden; background:#0f172a;">
+            <img data-site-image="academy_dance" src="assets/images/17.jpg" alt="Görsel Alanı 17 - YT Dans Okulu" style="width:100%; height:100%; object-fit:cover; display:block;">
+          </div>
+          <div class="feat-title">YT Dans Okulu</div>
+          <p class="feat-desc">İlk Dans, Zeybek, Oryantal, Zumba, Yöresel Halaylar. Özel ve grup dersi seçenekleriyle ritmi yakalayın.</p>
+          <a href="https://wa.me/905532111358?text=Merhaba%2C%20YT%20Dans%20Okulu%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum." target="_blank" rel="noopener" class="btn btn-primary" style="width:100%; margin-top:16px; display:block; text-align:center;" aria-label="YT Dans Okulu hakkında WhatsApp'tan bilgi al">WhatsApp’tan Başvur</a>
+        </div>
+
+        <!-- DİL AKADEMİSİ -->
+        <div class="feat-card">
+          <div style="width:100%; height:260px; border-radius:var(--radius-md); margin-bottom:20px; overflow:hidden; background:#0f172a;">
+            <img data-site-image="academy_language" src="assets/images/18.jpg" alt="Görsel Alanı 18 - Dil Akademisi" style="width:100%; height:100%; object-fit:cover; display:block;">
+          </div>
+          <div class="feat-title">Dil Akademisi</div>
+          <p class="feat-desc">İngilizce ve Korece eğitimlerinde özel ders ve grup dersi seçenekleriyle düzenli öğrenme programları.</p>
+          <a href="https://wa.me/905532111358?text=Merhaba%2C%20Dil%20Akademisi%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum." target="_blank" rel="noopener" class="btn btn-primary" style="width:100%; margin-top:16px; display:block; text-align:center;" aria-label="Dil Akademisi hakkında WhatsApp'tan bilgi al">WhatsApp’tan Başvur</a>
+        </div>
+
+        <!-- ÇOCUK AKADEMİSİ -->
+        <div class="feat-card">
+          <div style="width:100%; height:260px; overflow:hidden; border-radius:var(--radius-md); margin-bottom:20px; background:#0f172a;">
+            <img data-site-image="academy_kids" src="assets/images/19.jpg" alt="Görsel Alanı 19 - Çocuk Akademisi" style="width:100%; height:100%; object-fit:cover; display:block;">
+          </div>
+          <div class="feat-title">Çocuk Akademisi</div>
+          <p class="feat-desc">Çocukların sporla gelişimini destekleyen yaş grubuna uygun temel teknik, koordinasyon ve takım çalışması.</p>
+          <a href="https://wa.me/905532111358?text=Merhaba%2C%20%C3%87ocuk%20Akademisi%20hakk%C4%B1nda%20bilgi%20almak%20istiyorum." target="_blank" rel="noopener" class="btn btn-primary" style="width:100%; margin-top:16px; display:block; text-align:center;" aria-label="Çocuk Akademisi hakkında WhatsApp'tan bilgi al">WhatsApp’tan Başvur</a>
+        </div>
+        
+        <!-- PROFESYONEL KADRO -->
+        <div class="feat-card">
+          <div style="width:100%; height:260px; overflow:hidden; border-radius:var(--radius-md); margin-bottom:20px; background:#0f172a;">
+            <img data-site-image="team_image" src="assets/images/20.jpg" alt="Görsel Alanı 20 - Uzman Kadro" style="width:100%; height:100%; object-fit:cover; display:block;">
+          </div>
+          <div class="feat-title">Uzman Antrenör Kadrosu</div>
+          <p class="feat-desc">Tüm branşlarda, alanında tecrübeli ve pedagojik formasyona sahip elit eğitmenlerle çalışın.</p>
+          <a href="#iletisim" class="btn btn-secondary" style="width: 100%; margin-top: 16px; display: block; text-align: center;">Eğitmenlerimizle Tanışın</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALLERY -->
+  <section id="galeri" class="section gallery-section" style="padding-top:0;">
+    <div style="max-width:1200px; margin:0 auto; text-align:center; padding-bottom: 50px;">
+      <div class="section-label">Kompleksten Kareler</div>
+      <h2 class="section-heading">Göz Kamaştıran <span class="gradient-text">Detaylar</span></h2>
+      <p class="section-sub" style="margin:0 auto;">Premium tesisimizin her köşesini detaylarıyla inceleyin.</p>
+    </div>
+    <div class="gallery-marquee">
+      <div class="marquee-track" id="gallery-track">
+        <!-- Images injected by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA & İLETİŞİM -->
+  <div id="iletisim" class="cta-section">
+    <h2>İletişim & <span class="gradient-text-gold">Ulaşım</span></h2>
+    <p>Sanat ve sporla dolu ayrıcalıklı bir yaşama adım atmak için YT Kampüs ailesine katılın. Tesisimizi ziyaret edin!</p>
+    
+    <div class="contact-grid">
+      <!-- İletişim Kartı -->
+      <div class="contact-card">
+        <h3>📞 İletişim Bilgileri</h3>
+        <p><strong>Tel 1:</strong> <a href="tel:+905532111358">+90 553 211 13 58</a><br><strong>Tel 2:</strong> <a href="tel:+905068080886">+90 506 808 08 86</a></p>
+        <div class="whatsapp-actions">
+          <a href="https://wa.me/905532111358" target="_blank" rel="noopener" class="whatsapp-link">💬 WhatsApp Tel 1</a>
+          <a href="https://wa.me/905068080886" target="_blank" rel="noopener" class="whatsapp-link">💬 WhatsApp Tel 2</a>
+        </div>
+        <p><strong>E-Posta:</strong> <a href="mailto:iletisim@ytkampus.com">iletisim@ytkampus.com</a></p>
+      </div>
+      
+      <!-- Konum Kartı -->
+      <div class="contact-card">
+        <h3>📍 Adres & Konum</h3>
+        <p>Kayseri, Türkiye<br>YT Kampüs</p>
+        <a href="https://maps.app.goo.gl/3ea84B6T5ei7FhRp8" target="_blank" rel="noopener" class="location-link">Haritada Görüntüle ↗</a>
+      </div>
+    </div>
+
+    <div class="cta-buttons">
+      <a href="/pages/auth/register.html" class="btn btn-light btn-lg">Online Kayıt & Rezervasyon</a>
+      <a href="https://maps.app.goo.gl/3ea84B6T5ei7FhRp8" target="_blank" class="btn btn-outline-light btn-lg">Yol Tarifi Al</a>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="logo-container" style="gap:10px;">
+      <div class="logo-mark" style="width:32px;height:32px;font-size:11px;"><span class="logo-mark-fallback">YT</span><img data-site-logo alt="YT Kampüs logosu"></div>
+      <div class="logo-text" style="font-size:13px;">YT KAMPÜS<small style="font-size:8px;">SPOR · SANAT · YAŞAM</small></div>
+    </div>
+    <div style="text-align:center;">
+      <div>© 2026 YT Kampüs Merkezi. Tüm Hakları Saklıdır.</div>
+      <div class="creator-credit">Bu platform <strong>Serhat Koçyiğit</strong> tarafından özenle hazırlandı. İş birlikleri için <a href="tel:+905447414393">+90 544 741 43 93</a></div>
+    </div>
+    <div style="display:flex; align-items:center; gap:24px;">
+      <a class="instagram-qr" href="https://www.instagram.com/ytkampus/" target="_blank" rel="noopener noreferrer" aria-label="YT Kampüs Instagram hesabını aç">
+        <img src="/assets/images/ytkampus-instagram-qr.png" alt="YT Kampüs Instagram QR kodu">
+        <span><strong>Instagram</strong>QR kodu okut veya tıkla</span>
+      </a>
+      <a href="/pages/legal/kvkk-aydinlatma.html">KVKK Aydınlatma Metni</a>
+      <a href="#">Kullanım Şartları</a>
+      <a href="#iletisim">İletişim</a>
+    </div>
+  </footer>
+
+  <!-- LIGHTBOX MODAL -->
+  <div id="lightbox" class="lightbox-overlay">
+    <span class="lightbox-close">&times;</span>
+    <img class="lightbox-img" id="lightbox-img" src="" alt="Tam Ekran Görsel">
+  </div>
+
+  <script src="js/app.js"></script>
+  <script>
+    function handleReservation(fieldId) {
+      if (fieldId) {
+        localStorage.setItem('preselect_field', fieldId);
+      } else {
+        localStorage.removeItem('preselect_field');
+      }
+      if (typeof ProSaha !== 'undefined' && ProSaha.isLoggedIn()) {
+        window.location.href = fieldId ? '/pages/user/dashboard.html?page=booking&v=2' : '/pages/user/dashboard.html?v=2';
+      } else {
+        window.location.href = '/pages/auth/login.html';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      // Header scroll effect
+      const header = document.getElementById('header');
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 20) header.classList.add('scrolled');
+        else header.classList.remove('scrolled');
+      });
+
+      // Mobile Menu Toggle
+      const mobileBtn = document.getElementById('mobile-menu-btn');
+      const mobileNav = document.getElementById('mobile-nav');
+      const mobileOverlay = document.getElementById('mobile-overlay');
+      const navClose = document.getElementById('nav-close');
+      
+      function toggleMenu() {
+        mobileNav.classList.toggle('active');
+        if (mobileOverlay) mobileOverlay.classList.toggle('active');
+        mobileBtn.setAttribute('aria-expanded', mobileNav.classList.contains('active'));
+        mobileBtn.setAttribute('aria-label', mobileNav.classList.contains('active') ? 'Menüyü kapat' : 'Menüyü aç');
+      }
+      function closeMenu() {
+        mobileNav.classList.remove('active');
+        if (mobileOverlay) mobileOverlay.classList.remove('active');
+        mobileBtn.setAttribute('aria-expanded', 'false');
+        mobileBtn.setAttribute('aria-label', 'Menüyü aç');
+      }
+
+      if (mobileBtn && mobileNav) {
+        mobileBtn.addEventListener('click', toggleMenu);
+        if (navClose) navClose.addEventListener('click', closeMenu);
+        if (mobileOverlay) mobileOverlay.addEventListener('click', closeMenu);
+        
+        // Close when clicking a link
+        mobileNav.querySelectorAll('a').forEach(link => {
+          link.addEventListener('click', closeMenu);
+        });
+      }
+
+      // Oturumu HttpOnly çerez üzerinden doğrula. Böylece tarayıcıdaki eski/eksik
+      // profil verisi, giriş yapmış üyeye yanlışlıkla "Giriş Yap" göstermez.
+      fetch('/api/auth/me', { credentials: 'same-origin' })
+        .then(response => response.ok ? response.json() : null)
+        .then(user => {
+          if (!user) return;
+          localStorage.setItem('prosaha_user', JSON.stringify(user));
+          const panelUrl = user.role === 'admin' ? '/pages/admin/dashboard.html?v=2' : '/pages/user/dashboard.html?v=2';
+          const actionsDiv = document.getElementById('header-actions');
+          if (actionsDiv) actionsDiv.innerHTML = `<a href="${panelUrl}" class="btn btn-primary">Panele Git</a>`;
+          const drawerActions = document.getElementById('drawer-actions');
+          if (drawerActions) drawerActions.innerHTML = `<a href="${panelUrl}" class="btn btn-primary" style="width:100%; justify-content:center;">Panele Git</a>`;
+          const heroBtn = document.querySelector('.hero-actions .btn-primary');
+          if (heroBtn) { heroBtn.href = panelUrl; heroBtn.textContent = 'Panele Git'; }
+        })
+        .catch(() => {});
+
+      // Yönetici panelinden değiştirilen saha kartı görsellerini yansıt.
+      fetch('/api/fields').then(response => response.ok ? response.json() : []).then(fields => {
+        fields.forEach(field => {
+          if (!field.homepage_image_url) return;
+          const image = document.querySelector(`[data-field-image="${Number(field.id)}"]`);
+          if (image) image.src = `${field.homepage_image_url}?v=${encodeURIComponent(field.homepage_image_url)}`;
+        });
+      }).catch(() => {});
+      fetch('/api/site-images').then(response => response.ok ? response.json() : {}).then(images => {
+        Object.entries(images).forEach(([key, url]) => { document.querySelectorAll(`[data-site-image="${key}"]`).forEach(image => { if (url) { image.src=`${url}?v=${encodeURIComponent(url)}`; image.style.display='block'; } }); });
+        if (images.site_logo) {
+          const logoUrl = `${images.site_logo}?v=${encodeURIComponent(images.site_logo)}`;
+          const logoPath = new URL(images.site_logo, window.location.origin).pathname.toLowerCase();
+          const isVectorLogo = logoPath.endsWith('.svg');
+          document.querySelectorAll('[data-site-logo]').forEach(image => {
+            image.src = logoUrl;
+            const logoMark = image.closest('.logo-mark');
+            logoMark?.classList.add('has-uploaded-logo');
+            logoMark?.classList.toggle('has-bitmap-logo', !isVectorLogo);
+          });
+        }
+      }).catch(() => {});
+
+      // Animate on scroll
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('animate-fadeup'); observer.unobserve(e.target); }});
+      }, { threshold: 0.1 });
+      document.querySelectorAll('.feat-card, .gallery-section').forEach(el => observer.observe(el));
+
+      // Hero counters: run once when the page becomes visible.
+      document.querySelectorAll('[data-count]').forEach(counter => {
+        const target = Number(counter.dataset.count);
+        const suffix = counter.dataset.suffix || '';
+        const started = performance.now();
+        const duration = 1150;
+        const tick = now => {
+          const progress = Math.min((now - started) / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          counter.textContent = Math.floor(target * eased).toLocaleString('tr-TR') + suffix;
+          if (progress < 1) requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      });
+
+      // Inject Gallery Images (Görsel Alanları 21 - 28)
+      const track = document.getElementById('gallery-track');
+      if(track) {
+        let html = '';
+        for(let i = 21; i <= 28; i++) {
+          html += `<div class="marquee-item"><img data-site-image="gallery_${i}" src="assets/images/${i}.jpg" alt="Galeri Görseli ${i}" loading="lazy"></div>`;
+        }
+        track.innerHTML = html + html; 
+      }
+
+      // Lightbox Logic
+      const lightbox = document.getElementById('lightbox');
+      const lightboxImg = document.getElementById('lightbox-img');
+      const closeBtn = document.querySelector('.lightbox-close');
+
+      // Target relevant foreground images for click
+      const images = document.querySelectorAll('.hero-visual img, #hakkimizda img, .feat-card img, .marquee-item img');
+      
+      images.forEach(img => {
+        img.classList.add('clickable-img'); // adds hover effect cursor
+        img.addEventListener('click', (e) => {
+          lightboxImg.src = e.target.src;
+          lightbox.classList.add('active');
+        });
+      });
+
+      const closeLightbox = () => lightbox.classList.remove('active');
+      closeBtn.addEventListener('click', closeLightbox);
+      lightbox.addEventListener('click', (e) => { if(e.target === lightbox) closeLightbox(); });
+      document.addEventListener('keydown', (e) => { if(e.key === 'Escape') closeLightbox(); });
+    });
+  </script>
+</body>
+</html>

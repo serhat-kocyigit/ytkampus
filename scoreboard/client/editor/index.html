@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tasarım Editörü - Halı Saha</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared/navigation.css">
+  <link rel="stylesheet" href="/scoreboard/scoreboard.css">
+  <link rel="stylesheet" href="editor.css">
+</head>
+<body>
+
+  <!-- ── TOOLBAR ── -->
+  <header class="editor-toolbar">
+    <div class="toolbar-left">
+      <a href="/" class="toolbar-logo">⚽</a>
+      <span class="toolbar-title">Tasarım Editörü</span>
+      <a href="/scoreboard/" target="_blank" class="toolbar-link tv-link">📺 TV</a>
+      <a href="/referee/"   target="_blank" class="toolbar-link ref-link">📱 Hakem</a>
+    </div>
+    <div class="toolbar-center">
+      <select id="layoutSelect" class="toolbar-select">
+        <option value="">— Layout Seçin —</option>
+      </select>
+      <button class="toolbar-btn" onclick="saveLayout()">💾 Kaydet</button>
+      <button class="toolbar-btn btn-publish" onclick="activateLayout()">🚀 Yayınla</button>
+    </div>
+    <div class="toolbar-right">
+      <button class="toolbar-btn" onclick="resetLayout()">🔄 Sıfırla</button>
+      <button class="toolbar-btn" onclick="newLayout()">➕ Yeni</button>
+      <button class="toolbar-btn" id="undoBtn" title="Geri al (Ctrl+Z)">↶</button>
+      <button class="toolbar-btn" id="redoBtn" title="Yinele (Ctrl+Y)">↷</button>
+      <button class="toolbar-btn danger-btn" onclick="deleteLayout()">🗑 Sil</button>
+    </div>
+  </header>
+
+  <!-- ── WORKSPACE ── -->
+  <div class="editor-workspace">
+
+    <!-- Sol Panel -->
+    <aside class="side-panel">
+
+      <section class="panel-section">
+        <h3 class="panel-section-title">Bileşenler</h3>
+        <div class="component-list">
+          <div class="component-item" data-component="score">
+            <span class="comp-icon">🔢</span><span>Skor</span>
+          </div>
+          <div class="component-item" data-component="timer">
+            <span class="comp-icon">⏱</span><span>Sayaç</span>
+          </div>
+          <div class="component-item" data-component="teamHome">
+            <span class="comp-icon">🏠</span><span>Ev Sahibi</span>
+          </div>
+          <div class="component-item" data-component="teamAway">
+            <span class="comp-icon">✈️</span><span>Deplasman</span>
+          </div>
+          <div class="component-item" data-component="fieldLogo">
+            <span class="comp-icon">🏟</span><span>Saha Bilgisi</span>
+          </div>
+          <div class="component-item" data-component="fieldLogoLeft">
+            <span class="comp-icon">◀️</span><span>Sol Logo</span>
+          </div>
+          <div class="component-item" data-component="fieldLogoRight">
+            <span class="comp-icon">▶️</span><span>Sağ Logo</span>
+          </div>
+          <div class="component-item" data-component="period">
+            <span class="comp-icon">📋</span><span>Devre</span>
+          </div>
+          <div class="component-item" data-component="lastGoal">
+            <span class="comp-icon">⚽</span><span>Son Gol</span>
+          </div>
+          <div class="component-item" data-component="adBanner">
+            <span class="comp-icon">📢</span><span>Reklam Bandı</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Özellikler -->
+      <section class="panel-section props-section" id="propertiesPanel" style="display:none;">
+        <h3 class="panel-section-title">
+          <span id="selectedLabel">Özellikler</span>
+        </h3>
+
+        <div class="prop-label">Konum</div>
+        <div class="prop-row">
+          <div class="prop-field">
+            <label>X %</label>
+            <input type="number" id="propX" class="prop-input" min="0" max="100" step="0.5" onchange="updateProperty('x')">
+          </div>
+          <div class="prop-field">
+            <label>Y %</label>
+            <input type="number" id="propY" class="prop-input" min="0" max="100" step="0.5" onchange="updateProperty('y')">
+          </div>
+        </div>
+
+        <div class="prop-label">Boyut</div>
+        <div class="prop-row">
+          <div class="prop-field">
+            <label>Gen %</label>
+            <input type="number" id="propW" class="prop-input" min="2" max="100" step="0.5" onchange="updateProperty('w')">
+          </div>
+          <div class="prop-field">
+            <label>Yük %</label>
+            <input type="number" id="propH" class="prop-input" min="2" max="100" step="0.5" onchange="updateProperty('h')">
+          </div>
+        </div>
+
+        <div class="prop-toggle-row">
+          <button type="button" class="mini-btn danger-btn" onclick="removeSelectedComponent()">Bu bileşeni kaldır</button>
+          <small>Silinmez; bileşenler listesinden yeniden eklenebilir.</small>
+        </div>
+
+        <div class="prop-label">Katman</div>
+        <div class="layer-actions">
+          <button type="button" class="mini-btn" onclick="changeLayer(1)">Öne getir</button>
+          <button type="button" class="mini-btn" onclick="changeLayer(-1)">Arkaya al</button>
+        </div>
+
+        <div class="prop-label">Hizalama</div>
+        <div class="align-actions">
+          <button type="button" class="icon-btn" onclick="alignSelected('left')" title="Sola hizala">⇤</button>
+          <button type="button" class="icon-btn" onclick="alignSelected('center')" title="Ortala">↔</button>
+          <button type="button" class="icon-btn" onclick="alignSelected('right')" title="Sağa hizala">⇥</button>
+          <button type="button" class="icon-btn" onclick="alignSelected('top')" title="Üste hizala">⇡</button>
+          <button type="button" class="icon-btn" onclick="alignSelected('middle')" title="Dikey ortala">↕</button>
+          <button type="button" class="icon-btn" onclick="alignSelected('bottom')" title="Alta hizala">⇣</button>
+        </div>
+
+        <div class="prop-label">Bileşen görünümü</div>
+        <div class="color-grid">
+          <label>Arka plan <input type="color" id="propBackground" value="#0f172a" oninput="updateAppearance('background')"></label>
+          <label>Yazı rengi <input type="color" id="propColor" value="#ffffff" oninput="updateAppearance('color')"></label>
+          <label>Vurgu / sayı <input type="color" id="propAccent" value="#ffffff" oninput="updateAppearance('accent')"></label>
+          <label>Çerçeve <input type="color" id="propBorder" value="#1e293b" oninput="updateAppearance('border')"></label>
+        </div>
+        <label class="range-label">İç yazı boyutu <output id="propFontScaleOut">100</output><input type="range" id="propFontScale" min="50" max="220" value="100" oninput="updateAppearance('fontScale')"></label>
+        <div class="prop-label">Yazı stili</div>
+        <label class="studio-label">Yazı tipi
+          <select id="propFontFamily" class="prop-input" onchange="updateAppearance('fontFamily')"><option value="inherit">Varsayılan</option><option value="Inter, sans-serif">Inter</option><option value="Orbitron, monospace">Orbitron</option><option value="Arial, sans-serif">Arial</option><option value="Georgia, serif">Georgia</option></select>
+        </label>
+        <label class="studio-label">Kalınlık
+          <select id="propFontWeight" class="prop-input" onchange="updateAppearance('fontWeight')"><option value="inherit">Varsayılan</option><option value="400">Normal</option><option value="600">Yarı kalın</option><option value="700">Kalın</option><option value="900">Çok kalın</option></select>
+        </label>
+        <label class="range-label">Harf aralığı <output id="propLetterSpacingOut">0</output><input type="range" id="propLetterSpacing" min="-2" max="12" value="0" oninput="updateAppearance('letterSpacing')"></label>
+        <label class="range-label">Satır yüksekliği <output id="propLineHeightOut">120</output><input type="range" id="propLineHeight" min="80" max="180" value="120" oninput="updateAppearance('lineHeight')"></label>
+        <label class="studio-label">Metin hizası
+          <select id="propTextAlign" class="prop-input" onchange="updateAppearance('textAlign')"><option value="center">Orta</option><option value="left">Sol</option><option value="right">Sağ</option></select>
+        </label>
+        <label class="toggle-label compact-toggle"><input type="checkbox" id="propTextShadow" checked onchange="updateAppearance('textShadow')"><span class="toggle-track"><span class="toggle-thumb"></span></span> Yazı gölgesi</label>
+        <label class="range-label">Yuvarlaklık <output id="propRadiusOut">10</output><input type="range" id="propRadius" min="0" max="50" value="10" oninput="updateAppearance('radius')"></label>
+        <label class="range-label">Saydamlık <output id="propOpacityOut">100</output><input type="range" id="propOpacity" min="20" max="100" value="100" oninput="updateAppearance('opacity')"></label>
+        <div id="logoControls" style="display:none;">
+          <div class="prop-label">Takım logosu</div>
+          <label class="range-label">Logo boyutu <output id="propLogoScaleOut">100</output><input type="range" id="propLogoScale" min="55" max="145" value="100" oninput="updateAppearance('logoScale')"></label>
+          <label class="studio-label">Görüntü modu
+            <select id="propLogoFit" class="prop-input" onchange="updateAppearance('logoFit')"><option value="contain">Tamamı görünsün</option><option value="cover">Alanı doldursun</option></select>
+          </label>
+        </div>
+        <div id="teamInnerControls" style="display:none;">
+          <div class="prop-label">Panel içeriğini ayrı düzenle</div>
+          <label class="studio-label">Düzenlenecek alan
+            <select id="innerPart" class="prop-input" onchange="selectTeamInnerPart()">
+              <option value="logo">Logo</option>
+              <option value="name">Takım adı</option>
+              <option value="yellow">Sarı kart rozeti</option>
+              <option value="red">Kırmızı kart rozeti</option>
+            </select>
+          </label>
+          <label class="range-label">Yukarı / aşağı <output id="innerYOut">0</output><input type="range" id="innerY" min="0" max="100" value="0" oninput="updateTeamInner('y')"></label>
+          <label class="range-label">Sağ / sol <output id="innerXOut">0</output><input type="range" id="innerX" min="0" max="100" value="0" oninput="updateTeamInner('x')"></label>
+          <label class="range-label">Yukarı / aşağı <output id="innerYOut">0</output><input type="range" id="innerY" min="0" max="100" value="0" oninput="updateTeamInner('y')"></label>
+          <label class="range-label">Yukarı / aşağı <output id="innerYOut">0</output><input type="range" id="innerY" min="0" max="100" value="0" oninput="updateTeamInner('y')"></label>
+          <label class="range-label">Boyut <output id="innerScaleOut">100</output><input type="range" id="innerScale" min="50" max="200" value="100" oninput="updateTeamInner('scale')"></label>
+          <div class="color-grid"><label>İç renk <input type="color" id="innerColor" value="#ffffff" oninput="updateTeamInner('color')"></label><label>İç zemin <input type="color" id="innerBackground" value="#0f172a" oninput="updateTeamInner('background')"></label></div>
+        </div>
+      </section>
+
+      <section class="panel-section studio-section">
+        <h3 class="panel-section-title">Genel görünüm</h3>
+        <div class="preset-grid" id="themePresets">
+          <button type="button" data-theme="midnight">Gece</button>
+          <button type="button" data-theme="pitch">Saha</button>
+          <button type="button" data-theme="arena">Arena</button>
+          <button type="button" data-theme="clean">Açık</button>
+        </div>
+        <label class="studio-label">Zemin rengi <input type="color" id="themeBackground" value="#02030e"></label>
+        <label class="studio-label">Panel rengi <input type="color" id="themePanel" value="#0f172a"></label>
+        <label class="studio-label">Genel yazı <input type="color" id="themeText" value="#ffffff"></label>
+        <label class="studio-label">Vurgu rengi <input type="color" id="themeAccent" value="#00ff88"></label>
+        <label class="studio-label">Genel çerçeve <input type="color" id="themeBorder" value="#1e293b"></label>
+        <label class="toggle-label compact-toggle"><input type="checkbox" id="snapToGrid" checked><span class="toggle-track"><span class="toggle-thumb"></span></span> Izgaraya yapıştır</label>
+        <label class="toggle-label compact-toggle"><input type="checkbox" id="showGrid" checked><span class="toggle-track"><span class="toggle-thumb"></span></span> Izgarayı göster</label>
+      </section>
+
+      <!-- İpucu -->
+      <div class="panel-hint">
+        <p>🖱 Sürükle: taşı</p>
+        <p>↔ Köşe: yeniden boyutlandır</p>
+        <p>⌨ Seçili öğe: ok tuşlarıyla hassas taşı</p>
+        <p>🖱 Tıkla: seç & düzenle</p>
+      </div>
+
+    </aside>
+
+    <!-- Önizleme Alanı -->
+    <main class="preview-area">
+      <div class="preview-label">16 : 9 &nbsp;·&nbsp; TV Önizleme <span id="saveState">Değişiklikler yerel önizlemede</span></div>
+      <div class="preview-wrapper">
+        <div class="preview-bg-gradient"></div>
+        <div class="preview-bg-grid"></div>
+        <div class="preview-container scoreboard" id="previewContainer">
+
+          <div class="draggable sb-comp sb-brand-logo" id="drag-fieldLogoLeft" data-key="fieldLogoLeft"><span class="editor-brand-mark">YT</span></div>
+          <div class="draggable sb-comp sb-brand-logo" id="drag-fieldLogoRight" data-key="fieldLogoRight"><span class="editor-brand-mark">YT</span></div>
+
+          <!-- Saha Bilgisi -->
+          <div class="draggable sb-comp sb-field-info" id="drag-fieldLogo" data-key="fieldLogo">
+            <span class="field-logo" style="display:flex;align-items:center;justify-content:center;">🏟</span>
+            <span class="field-name">HALI SAHA</span>
+          </div>
+
+          <!-- Devre -->
+          <div class="draggable sb-comp sb-period" id="drag-period" data-key="period">
+            <div class="period-content"><span class="period-indicator"></span><span class="period-text">MAÇ DEVAM EDİYOR</span></div>
+            <span class="real-time-clock">00:00:00</span>
+          </div>
+
+          <!-- Sayaç -->
+          <div class="draggable sb-comp sb-timer" id="drag-timer" data-key="timer">
+            <span class="timer-display">00:00</span>
+          </div>
+
+          <!-- Ev Sahibi -->
+          <div class="draggable sb-comp sb-team-panel sb-team-home" id="drag-teamHome" data-key="teamHome">
+            <div class="team-logo-wrapper"><div class="team-logo-placeholder">🏠</div></div>
+            <div class="team-name">EV SAHİBİ</div>
+            <div class="team-cards"><span class="card-badge yellow-badge">🟡 0</span><span class="card-badge red-badge">🔴 0</span></div>
+          </div>
+
+          <!-- Skor -->
+          <div class="draggable sb-comp sb-score" id="drag-score" data-key="score">
+            <span class="score-number">0</span><span class="score-separator">:</span><span class="score-number">0</span>
+          </div>
+
+          <!-- Deplasman -->
+          <div class="draggable sb-comp sb-team-panel sb-team-away" id="drag-teamAway" data-key="teamAway">
+            <div class="team-logo-wrapper"><div class="team-logo-placeholder">✈️</div></div>
+            <div class="team-name">DEPLASMAN</div>
+            <div class="team-cards"><span class="card-badge yellow-badge">🟡 0</span><span class="card-badge red-badge">🔴 0</span></div>
+          </div>
+
+          <!-- Son Gol -->
+          <div class="draggable sb-comp sb-last-goal" id="drag-lastGoal" data-key="lastGoal">
+            <span class="last-goal-icon">⚽</span><span class="last-goal-text">EV SAHİBİ — 15' (14:30)</span>
+          </div>
+
+          <!-- Reklam Bandı -->
+          <div class="draggable sb-comp sb-ad-banner" id="drag-adBanner" data-key="adBanner">
+            <div class="ad-banner-content">📢 REKLAM ALANI</div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/shared/socket-client.js"></script>
+  <script src="/shared/api-client.js"></script>
+  <script src="/shared/animations.js"></script>
+  <script src="/shared/navigation.js"></script>
+  <script src="editor.js"></script>
+</body>
+</html>

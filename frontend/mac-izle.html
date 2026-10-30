@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Maç Videoları | YT Kampüs</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/global.css">
+  <style>
+    body { background:linear-gradient(180deg,#f7faff 0,#eef4fb 62%,#f7faff 100%); color: var(--text-100); }
+    
+    .nav-header {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 5%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .brand-lockup { display:flex; align-items:center; gap:10px; color:var(--text-100); text-decoration:none; }
+    .brand-mark { width:34px; height:34px; display:grid; place-items:center; overflow:hidden; border-radius:10px; color:#fff; background:linear-gradient(145deg,#0b1f49,#2563eb); font-weight:900; font-size:12px; }
+    .brand-mark img { display:none; width:100%; height:100%; object-fit:contain; background:#fff; }
+    .brand-mark.has-uploaded-logo .brand-mark-fallback { display:none; }
+    .brand-mark.has-uploaded-logo img { display:block; }
+    .brand-mark.has-bitmap-logo img { transform:scale(2.05); }
+    .brand-copy { font-size:13px; line-height:1.05; font-weight:900; }
+    .brand-copy small { display:block; margin-top:3px; color:var(--brand-500); font-size:8px; letter-spacing:1.1px; }
+    .video-intro { position:relative; overflow:hidden; margin:0 0 22px; padding:38px 40px; border-radius:28px; color:#fff; background:radial-gradient(circle at 84% 18%,rgba(96,165,250,.8),transparent 22%),linear-gradient(120deg,#071a3f,#1744a0 64%,#2563eb); box-shadow:0 22px 42px rgba(29,78,216,.22); }
+    .video-intro p { color:#dbeafe; margin-top:8px; line-height:1.6; }
+    .video-intro::after { content:'▶'; position:absolute; right:42px; bottom:-44px; color:rgba(255,255,255,.08); font-size:190px; font-weight:900; line-height:1; }
+    .intro-eyebrow { position:relative; z-index:1; display:inline-flex; gap:8px; align-items:center; margin-bottom:13px; padding:7px 11px; border:1px solid rgba(255,255,255,.2); border-radius:999px; background:rgba(255,255,255,.08); color:#bfdbfe; font-size:11px; letter-spacing:1.3px; font-weight:800; }
+    .intro-eyebrow::before { content:''; width:7px; height:7px; border-radius:50%; background:#fbbf24; box-shadow:0 0 0 4px rgba(251,191,36,.15); }
+    .retention-notice { position:relative; z-index:1; display:inline-flex; align-items:center; gap:8px; margin-top:20px; padding:10px 13px; border:1px solid rgba(255,255,255,.2); border-radius:12px; background:rgba(7,18,37,.28); color:#e0ecff; font-size:12px; font-weight:600; }
+    .retention-notice strong { color:#fcd34d; }
+    
+    .page-container {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    
+    .search-panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      align-items: end;
+      margin-bottom: 30px;
+      box-shadow:0 14px 30px rgba(15,23,42,.05);
+    }
+    .search-heading { grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; margin-bottom:4px; }
+    .search-heading strong { font-size:18px; }
+    .search-heading span { color:var(--text-500); font-size:13px; }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .form-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-300);
+    }
+    
+    .input-field {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      color: var(--text-100);
+      min-height:48px; padding:12px 14px;
+      border-radius: var(--radius-md);
+      font-family: inherit;
+    }
+    
+    .player-container {
+      display: none; grid-template-columns:minmax(0,1fr) 370px; gap:24px;
+    }
+    
+    @media (max-width: 900px) {
+      .player-container { grid-template-columns: 1fr; }
+    }
+    
+    .video-wrapper {
+      background: #071225; border-radius:24px;
+      overflow: hidden;
+      border: 1px solid rgba(37,99,235,.24); box-shadow:0 20px 40px rgba(15,23,42,.16);
+      position: relative;
+    }
+    
+    video { width: 100%; aspect-ratio:16/9; object-fit:contain;
+      display: block;
+    }
+    
+    .tools-panel {
+      background:rgba(255,255,255,.95); border:1px solid var(--border); border-radius:24px; padding:22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px; box-shadow:0 14px 30px rgba(15,23,42,.06);
+    }
+    .tool-head { display:flex; align-items:flex-start; gap:12px; }
+    .tool-icon { width:42px; height:42px; display:grid; place-items:center; flex:0 0 auto; border-radius:14px; background:#e8f0ff; color:#1d4ed8; font-size:20px; }
+    .tool-head h3 { margin:0 0 3px; font-size:18px; }
+    .tool-head p { margin:0; font-size:12px; color:var(--text-500); line-height:1.5; }
+
+    .clip-btn {
+      background:linear-gradient(135deg,#1d4ed8,#2563eb); color:#fff; border:0; padding:16px; border-radius:14px;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    
+    .clip-btn:hover {
+      background: #0f3faa; color:#fff; transform:translateY(-2px); box-shadow:0 10px 20px rgba(37,99,235,.24);
+    }
+
+    .clip-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .clip-item {
+      flex-wrap: wrap;
+      gap: 12px;
+      background:#f8fafc; border: 1px solid var(--border); padding:14px; border-radius:14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .clip-item-info {
+      font-size: 13px;
+      color: var(--text-300);
+    }
+    
+    .clip-item-title {
+      font-weight: 600;
+      color: var(--text-100);
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    
+    .btn-download {
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 12px;
+    }
+    .clip-controls { display:none; background:#f8fbff; padding:18px; border-radius:16px; border:1px solid #dbeafe; width:100%; }
+    .clip-guide { margin:0 0 14px; text-align:center; font-size:12px; color:var(--text-500); }
+    .time-range { display:grid; grid-template-columns:1fr 20px 1fr; align-items:center; gap:8px; margin-bottom:14px; }
+    .time-box { padding:12px 8px; border:1px solid #dbeafe; border-radius:14px; background:#fff; }
+    .time-box > div:first-child { margin-bottom:7px; text-align:center; color:var(--text-500); font-size:10px; font-weight:800; letter-spacing:.8px; }
+    .time-inputs { display:flex; justify-content:center; align-items:center; gap:4px; color:var(--text-300); font-weight:800; }
+    .time-inputs input { width:42px; padding:7px 3px; border:1px solid #bfdbfe; border-radius:8px; background:#f8fbff; color:#0f172a; text-align:center; font:800 17px Outfit,sans-serif; }
+    .duration-label { margin-bottom:8px; text-align:center; color:var(--text-500); font-size:11px; }
+    .duration-buttons { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; margin-bottom:14px; }
+    .duration-buttons button { padding:8px 3px !important; font-size:11px !important; }
+    .clip-actions { display:grid; grid-template-columns:1fr 1fr; gap:9px; }
+    .clip-actions .btn { width:100%; padding:12px 8px; font-size:13px; }
+    .clips-heading { display:flex; align-items:center; justify-content:space-between; margin:2px 0 0; padding:12px 0 9px; border-bottom:1px solid var(--border); font-size:14px; }
+    .clips-heading span { color:var(--text-500); font-size:11px; font-weight:500; }
+    .player-caption { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:13px 16px; background:#0b1f49; color:#dbeafe; font-size:12px; }
+    .player-caption strong { color:#fff; }
+    #video-overlay { top:16px !important; left:16px !important; border:1px solid rgba(255,255,255,.18); border-radius:999px !important; background:rgba(7,18,37,.74) !important; backdrop-filter:blur(8px); font-size:11px !important; letter-spacing:.4px; }
+    @media (max-width: 640px) {
+      .nav-header { padding:13px 16px; } .nav-header > div:last-child { display:none; }
+      .page-container { margin:20px auto 42px; padding:0 14px; }
+      .video-intro { padding:28px 22px; border-radius:22px; } .video-intro h1 { font-size:27px !important; }
+      .video-intro p { font-size:14px; } .video-intro::after { right:12px; font-size:130px; }
+      .retention-notice { align-items:flex-start; margin-top:16px; font-size:11px; line-height:1.45; }
+      .search-panel { grid-template-columns:1fr; padding:18px; gap:12px; border-radius:20px; }
+      .search-heading { display:block; } .search-heading span { display:block; margin-top:4px; }
+      .search-panel > .btn { width:100%; min-height:50px; height:auto !important; }
+      .player-container { gap:16px; } .video-wrapper { border-radius:18px; }
+      .player-caption { display:block; line-height:1.6; } .player-caption span { display:block; }
+      .tools-panel { padding:18px; border-radius:20px; } .tool-head h3 { font-size:17px; }
+      .time-range { gap:4px; grid-template-columns:1fr 12px 1fr; } .time-inputs input { width:36px; font-size:15px; }
+      .duration-buttons { grid-template-columns:repeat(2,1fr); } .clip-actions { grid-template-columns:1fr; }
+      .clip-item { align-items:flex-start; } .btn-download { padding:9px 13px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="nav-header">
+    <div style="display:flex; align-items:center; gap:12px;">
+      <a href="/index.html" style="color:var(--text-100); text-decoration:none; display:flex; align-items:center; gap:8px;">
+        <span style="font-size:24px;">←</span>
+      </a>
+      <a class="brand-lockup" href="/index.html" aria-label="YT Kampüs ana sayfa"><span class="brand-mark"><span class="brand-mark-fallback">YT</span><img data-site-logo alt="YT Kampüs logosu"></span><span class="brand-copy">YT KAMPÜS<small>SPOR · SANAT · YAŞAM</small></span></a>
+    </div>
+    <div style="font-size: 14px; color: var(--text-300);">Tüm Spor Alanları</div>
+  </header>
+
+  <div class="page-container">
+    <section class="video-intro">
+      <div class="intro-eyebrow">VIDEO HUB · YT KAMPÜS</div>
+      <h1 style="font-size:30px; margin:0;">Maç videoların burada.</h1>
+      <p>Futbol, tenis, voleybol ve basketbol dahil; rezervasyon yaptığın tüm spor alanlarının kayıtlarına ulaşabilir, unutulmaz anları kesit olarak kaydedebilirsin.</p>
+      <div class="retention-notice">🕒 <span>Video kayıtları <strong>7 gün boyunca</strong> erişime açıktır; süre sonunda otomatik olarak silinir.</span></div>
+    </section>
+    <div class="search-panel">
+      <div class="search-heading"><strong>Maçını bul</strong><span>Tarih, saat ve spor alanını seç.</span></div>
+      <div class="form-group">
+        <label>Tarih Seçin</label>
+        <input type="date" id="match-date" class="input-field">
+      </div>
+      <div class="form-group">
+        <label>Saat</label>
+        <select id="match-time" class="input-field">
+          <option value="">Saat Seçin...</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Spor Alanı</label>
+        <select id="match-field" class="input-field">
+          <option value="">Spor alanı seçin...</option>
+        </select>
+      </div>
+      <button onclick="searchMatch()" class="btn btn-primary" style="height: 43px;">Maçı Bul</button>
+    </div>
+
+    <div id="player-section" class="player-container">
+      <div class="video-wrapper">
+        <video id="match-video" controls>
+          <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" type="video/mp4">
+          Tarayıcınız video etiketini desteklemiyor.
+        </video>
+        <div id="video-overlay" style="position:absolute; top:20px; left:20px; background:rgba(0,0,0,0.7); padding:8px 12px; border-radius:6px; font-size:14px; font-weight:600; color:#fff;">
+          CANLI TEKRAR
+        </div>
+        <div class="player-caption"><strong>Maç kaydın hazır</strong><span>Önemli anlarını hemen kesit olarak kaydet.</span></div>
+      </div>
+
+      <aside class="tools-panel" style="max-width: 100%; box-sizing: border-box; overflow: hidden;">
+        <div class="tool-head">
+          <div class="tool-icon">✂</div>
+          <div><h3>Önemli anı kes</h3><p>Başlangıç ve bitiş zamanını seç, videodan kendi kesitini oluştur.</p></div>
+        </div>
+        
+        
+        <button class="clip-btn" id="start-clip-mode" onclick="toggleClipMode()">
+          <span>✂️</span> Kesit Oluştur
+        </button>
+
+        <div id="clip-controls" class="clip-controls">
+          
+          <div class="clip-guide">Kesit aralığını dakika : saniye biçiminde belirle.</div>
+          
+          <div class="time-range">
+              <div class="time-box"><div>BAŞLANGIÇ</div><div class="time-inputs"><input type="number" id="start-min" min="0" max="60" value="00" onchange="padTime(this)" oninput="updateEndFromDuration()"><span>:</span><input type="number" id="start-sec" min="0" max="59" value="00" onchange="padTime(this)" oninput="updateEndFromDuration()"></div></div>
+              <div style="text-align:center; color:var(--text-500); font-weight:800;">→</div>
+              <div class="time-box"><div>BİTİŞ</div><div class="time-inputs"><input type="number" id="end-min" min="0" max="60" value="01" onchange="padTime(this)"><span>:</span><input type="number" id="end-sec" min="0" max="59" value="00" onchange="padTime(this)"></div></div>
+          </div>
+          
+          <div class="duration-label">Hızlı süre seç</div>
+          <div class="duration-buttons">
+              <button class="btn btn-secondary" onclick="addDuration(15)">+15 sn</button>
+              <button class="btn btn-secondary" onclick="addDuration(30)">+30 sn</button>
+              <button class="btn btn-secondary" onclick="addDuration(60)">+1 dk</button>
+              <button class="btn btn-secondary" onclick="addDuration(120)">+2 dk</button>
+          </div>
+          
+          <div class="clip-actions"><button class="btn btn-secondary" onclick="previewClip()">▶ Önizle</button><button class="btn btn-primary" onclick="saveCustomClip()">✂ Kesiti Kaydet</button></div>
+        </div>
+        
+        <div class="clips-heading"><strong>Kliplerim</strong><span>Kaydedilen anlar</span></div>
+        <div id="clip-list" class="clip-list">
+          <div style="color:var(--text-500); font-size:13px; text-align:center; padding:20px;">Henüz kesit alınmadı.</div>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <script src="/js/app.js?v=security-cookie-2"></script>
+  <script>
+    // Yönetim panelinden değiştirilen kurumsal logo, video sayfasına da yansır.
+    fetch('/api/site-images').then(response => response.ok ? response.json() : {}).then(images => {
+      if (!images.site_logo) return;
+      const logoPath = new URL(images.site_logo, window.location.origin).pathname.toLowerCase();
+      document.querySelectorAll('[data-site-logo]').forEach(image => {
+        image.src = `${images.site_logo}?v=${encodeURIComponent(images.site_logo)}`;
+        const mark = image.closest('.brand-mark');
+        mark?.classList.add('has-uploaded-logo');
+        mark?.classList.toggle('has-bitmap-logo', !logoPath.endsWith('.svg'));
+      });
+    }).catch(() => {});
+
+    // Fetch all reservable sports areas dynamically: football, tennis, volleyball, basketball and more.
+    fetch('/api/fields').then(res => res.json()).then(data => { 
+      document.getElementById('match-field').innerHTML = '<option value="">Spor alanı seçin...</option>' + data.map(f => `<option value="${f.id}">${f.name}</option>`).join(''); 
+    });
+
+    // Populate times
+    const timeSelect = document.getElementById('match-time');
+    for(let i = 9; i < 24; i++) {
+      const timeStr = String(i).padStart(2, '0') + ':00';
+      timeSelect.innerHTML += `<option value="${timeStr}">${timeStr}</option>`;
+    }
+    ['00:00', '01:00'].forEach(timeStr => { timeSelect.innerHTML += `<option value="${timeStr}">${timeStr}</option>`; });
+
+    // Set today's date default
+    document.getElementById('match-date').valueAsDate = new Date();
+
+    
+
+    
+    async function searchMatch() {
+      const date = document.getElementById('match-date').value;
+      const time = document.getElementById('match-time').value;
+      let fieldVal = document.getElementById('match-field').value;
+      
+      // Map to ID
+      const fieldId = parseInt(fieldVal, 10);
+      
+      if(!date || !time || !fieldVal) {
+        alert('Lütfen tarih, saat ve spor alanı seçin!');
+        return;
+      }
+
+      // Check backend for video
+      try {
+        const { ok, data: json } = await ProSaha.fetch(`/videos/search?date=${encodeURIComponent(date)}&time_slot=${encodeURIComponent(time)}&field_id=${fieldId}`);
+        
+        const videoEl = document.getElementById('match-video');
+        
+        if (ok && json.success && json.video_id) {
+          const mediaResponse = await fetch(`/api/videos/${json.video_id}/content`, { headers: { Authorization: `Bearer ${ProSaha.getToken()}` } });
+          if (!mediaResponse.ok) throw new Error('Video yüklenemedi');
+          window.currentVideoId = json.video_id;
+          // Use an in-memory object URL so the bearer token never appears in a URL.
+          videoEl.querySelector('source').src = URL.createObjectURL(await mediaResponse.blob());
+          videoEl.load();
+        } else {
+          alert('Bu tarih ve saat için yüklenmiş bir maç videosu bulunamadı. Örnek video gösteriliyor.');
+          videoEl.querySelector('source').src = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4';
+          videoEl.load();
+        }
+      } catch(e) {
+        console.error(e);
+      }
+
+      // Show player
+      document.getElementById('player-section').style.display = 'grid';
+      
+      // Update overlay text
+      const fieldName = document.getElementById('match-field').options[document.getElementById('match-field').selectedIndex].text;
+      document.getElementById('video-overlay').textContent = `${date} | ${time} | ${fieldName}`;
+
+      // Play video
+      const video = document.getElementById('match-video');
+      video.currentTime = 0;
+      video.play().catch(e => console.log('Otomatik oynatma engellendi.'));
+    }
+
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = Math.floor(seconds % 60);
+      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+
+    
+    let clipMode = false;
+    let clipCounter = 1;
+
+    function toggleClipMode() {
+      clipMode = !clipMode;
+      document.getElementById('clip-controls').style.display = clipMode ? 'block' : 'none';
+      document.getElementById('start-clip-mode').style.display = clipMode ? 'none' : 'flex';
+      
+      if (clipMode) {
+        initSlider();
+      }
+    }
+
+    
+    let currentDurationSec = 60; // default 1 min range
+
+    function initSlider() {
+        // Nothing to init for the new UI since it's just inputs!
+    }
+
+    function padTime(input) {
+        if (input.value === '') input.value = '00';
+        else if (parseInt(input.value) < 10 && input.value.length === 1) input.value = '0' + input.value;
+    }
+
+    function getTimeInSeconds(type) {
+        const m = parseInt(document.getElementById(type + '-min').value || 0, 10);
+        const s = parseInt(document.getElementById(type + '-sec').value || 0, 10);
+        return (m * 60) + s;
+    }
+
+    function updateEndFromDuration() {
+        const startSec = getTimeInSeconds('start');
+        const endSec = startSec + currentDurationSec;
+        
+        const m = Math.floor(endSec / 60);
+        const s = endSec % 60;
+        
+        document.getElementById('end-min').value = String(m).padStart(2, '0');
+        document.getElementById('end-sec').value = String(s).padStart(2, '0');
+    }
+
+    function addDuration(seconds) {
+        currentDurationSec = seconds;
+        updateEndFromDuration();
+    }
+
+    function previewClip() {
+        const startSec = getTimeInSeconds('start');
+        const video = document.getElementById('match-video');
+        video.currentTime = startSec;
+        video.play().catch(() => console.log("Play engellendi"));
+    }
+    
+    function saveCustomClip() {
+      const clipStart = getTimeInSeconds('start');
+      const clipEnd = getTimeInSeconds('end');
+      
+      if (clipStart >= clipEnd) {
+          alert('Bitiş süresi, başlangıç süresinden büyük olmalıdır!');
+          return;
+      }
+
+      const list = document.getElementById('clip-list');
+      if (clipCounter === 1) {
+        list.innerHTML = '';
+      }
+
+      const clipHTML = `
+        <div class="clip-item">
+          <div>
+            <div class="clip-item-title">Kesit #${clipCounter}</div>
+            <div class="clip-item-info" style="word-break: break-all;">Süre: ${formatTime(clipStart)} - ${formatTime(clipEnd)}</div>
+          </div>
+          <button class="btn-download" style="flex-shrink:0; background:#2563eb; color:#fff; border:none; padding:6px 12px; border-radius:4px; font-weight:bold; cursor:pointer;" onclick="downloadClip(this, ${clipStart}, ${clipEnd})">İndir</button>
+        </div>
+      `;
+
+      list.innerHTML = clipHTML + list.innerHTML;
+      clipCounter++;
+      toggleClipMode();
+    }
+    
+    async function downloadClip(btn, start, end) {
+      const video = document.getElementById('match-video');
+      if (!window.currentVideoId) return alert('Önce yüklenmiş bir maç videosu seçin.');
+      
+      const originalText = btn.innerText;
+      btn.innerText = 'Hazırlanıyor...';
+      btn.disabled = true;
+      btn.style.opacity = '0.7';
+
+      try {
+          const { ok, data } = await ProSaha.fetch('/videos/public-clips', {
+              method: 'POST',
+              body: JSON.stringify({ video_id: window.currentVideoId, start, end })
+          });
+          if (ok && data.success) {
+              btn.innerText = 'İniyor...';
+              
+              const clipResponse = await fetch(data.clip_url);
+              if (!clipResponse.ok) throw new Error('Kesit dosyası indirilemedi');
+              const clipBlobUrl = URL.createObjectURL(await clipResponse.blob());
+              const a = document.createElement('a');
+              a.href = clipBlobUrl;
+              a.download = 'Mac_Kesiti_' + Math.floor(start) + 's.mp4';
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              setTimeout(() => URL.revokeObjectURL(clipBlobUrl), 1000);
+              
+              setTimeout(() => {
+                 btn.innerText = 'İndir';
+                 btn.disabled = false;
+                 btn.style.opacity = '1';
+              }, 2000);
+          } else {
+              alert('Hata: ' + (data.error || 'Bilinmeyen hata'));
+              btn.innerText = 'İndir';
+              btn.disabled = false;
+              btn.style.opacity = '1';
+          }
+      } catch(e) {
+          alert('Bağlantı hatası!');
+          btn.innerText = 'İndir';
+          btn.disabled = false;
+          btn.style.opacity = '1';
+      }
+    }
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">YT Kampüs logosu</title>
+  <desc id="desc">Lacivert, dairesel rozet içinde stilize YT harfleri</desc>
+  <defs>
+    <linearGradient id="navy" x1="74" y1="59" x2="424" y2="453" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#183B68"/>
+      <stop offset=".54" stop-color="#294F7E"/>
+      <stop offset="1" stop-color="#102D55"/>
+    </linearGradient>
+    <filter id="shadow" x="-18%" y="-18%" width="136%" height="136%">
+      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#102D55" flood-opacity=".16"/>
+    </filter>
+  </defs>
+  <g fill="none" stroke="url(#navy)" stroke-linecap="butt" stroke-linejoin="miter" filter="url(#shadow)">
+    <path d="M120 177C152 119 214 86 281 88c43 1 84 16 117 43" stroke-width="29"/>
+    <path d="M416 229c13 73-20 148-84 188-16 10-34 18-53 22" stroke-width="29"/>
+    <path d="M209 431c-77-21-132-90-132-173 0-19 3-38 9-55" stroke-width="29"/>
+  </g>
+  <g fill="url(#navy)" filter="url(#shadow)">
+    <path d="M102 170l36-31 116 150v132l-45-14V307z"/>
+    <path d="M250 260l74-103h55L272 307v143l-45 8V307z"/>
+    <path d="M303 154h137l19 45H360v206l-46 27V199h-57z"/>
+    <path d="M270 452h43v31h-43z"/>
+  </g>
+  <path d="M139 143l112 145" fill="none" stroke="#fff" stroke-linecap="square" stroke-width="10" opacity=".18"/>
+</svg>

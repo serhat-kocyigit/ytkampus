@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <link rel="icon" type="image/png" href="/assets/images/favicon.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Üye Ol | YT Kampüs</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/global.css">
+  <style>
+    body { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:40px 24px; background:var(--bg-900); }
+    .bg-glow { position:fixed; width:700px; height:700px; background:radial-gradient(circle, rgba(96,165,250,0.05) 0%, transparent 70%); top:50%; left:50%; transform:translate(-50%,-50%); pointer-events:none; }
+    .bg-grid { position:fixed; inset:0; z-index:0; pointer-events:none; background-image:linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px); background-size:60px 60px; }
+    .auth-wrap { position:relative; z-index:1; width:100%; max-width:720px; }
+    .auth-logo { text-align:center; margin-bottom:32px; }
+    .auth-logo a { font-size:28px; font-weight:900; text-decoration:none; color:var(--text-100); }
+    .auth-logo a span { color:var(--brand-400); }
+    .auth-card { background:var(--bg-card, #ffffff); border:1px solid var(--border); border-radius:var(--radius-xl); padding:40px; box-shadow:0 24px 60px rgba(0,0,0,0.05); }
+    .auth-card h2 { font-size:26px; font-weight:800; margin-bottom:6px; color:var(--text-100); }
+    .auth-card p { font-size:14px; color:var(--text-500); margin-bottom:32px; }
+    .section-title { font-size:16px; font-weight:600; color:var(--text-300); margin: 24px 0 16px 0; border-bottom: 1px solid var(--border); padding-bottom: 8px;}
+    .error-msg { background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.25); border-radius:var(--radius-sm); padding:12px 16px; font-size:13px; color:#ef4444; margin-bottom:20px; display:none; }
+    .error-msg.show { display:block; }
+    .auth-footer { text-align:center; margin-top:24px; font-size:14px; color:var(--text-500); }
+    .auth-footer a { color:var(--brand-400); text-decoration:none; font-weight:600; }
+    .two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .checkbox-group { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; font-size: 13px; color: var(--text-400); }
+    .checkbox-group input { margin-top: 3px; cursor: pointer; }
+    .checkbox-group label { cursor: pointer; line-height: 1.4; }
+    .checkbox-group a { color: var(--brand-400); text-decoration: underline; }
+    
+    .captcha-box { background: var(--bg-800); padding:16px; border-radius:8px; border:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .captcha-val { display:inline-block; margin-top:8px; font-size:24px; font-weight:900; letter-spacing:4px; background:rgba(0,0,0,0.05); padding:10px 20px; border-radius:8px; user-select:none; font-family:monospace; color:var(--text-100); border: 1px dashed var(--border); }
+    select.input-field { appearance: auto; background-color: var(--bg-800); }
+    
+    /* MODAL STYLES */
+    .modal-overlay { position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.8); z-index:9999; display:flex; align-items:center; justify-content:center; opacity:0; pointer-events:none; transition:opacity 0.3s; padding:20px; backdrop-filter:blur(5px); }
+    .modal-overlay.active { opacity:1; pointer-events:all; }
+    .modal-content { background:var(--bg-card, #fff); color:var(--text-200); max-width:800px; width:100%; max-height:85vh; overflow-y:auto; padding:32px; border-radius:12px; position:relative; box-shadow:0 20px 50px rgba(0,0,0,0.5); }
+    .modal-close { position:absolute; top:20px; right:24px; font-size:28px; cursor:pointer; font-weight:bold; color:var(--text-400); line-height:1; }
+    .modal-close:hover { color:var(--text-100); }
+    .modal-content h3 { font-size:20px; margin-bottom:16px; color:var(--text-100); border-bottom:1px solid var(--border); padding-bottom:12px; }
+    .modal-content p, .modal-content li { font-size:13px; line-height:1.6; margin-bottom:12px; color:var(--text-300); }
+
+    @media (max-width:600px) { .two-col { grid-template-columns: 1fr; } .auth-card { padding: 24px; } .captcha-box { flex-direction:column; gap:12px; align-items:flex-start; } }
+  </style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+  <div class="bg-grid"></div>
+
+  <div class="auth-wrap animate-fadein">
+    <div class="auth-logo">
+      <a href="/index.html">YT<span>Kampüs</span></a>
+    </div>
+    <div class="auth-card">
+      <h2>Kayıt Formu 📝</h2>
+      <p>Lütfen bilgilerinizi eksiksiz doldurarak kayıt işlemini tamamlayın.</p>
+
+      <div class="error-msg" id="error-msg"></div>
+
+      <form id="register-form">
+        <!-- SPORCU BİLGİLERİ -->
+        <div class="section-title">Sporcu Bilgileri</div>
+        <div class="form-group">
+          <label>Ad Soyad *</label>
+          <input type="text" id="full_name" class="input-field" placeholder="Ad Soyad" required>
+        </div>
+        <div class="form-group">
+          <label>Doğum Tarihi</label>
+          <input type="date" id="birth_date" class="input-field">
+        </div>
+        <div class="two-col">
+          <div class="form-group">
+            <label>E-Posta *</label>
+            <input type="email" id="email" class="input-field" placeholder="ornek@email.com" required>
+          </div>
+          <div class="form-group">
+            <label>Telefon</label>
+            <input type="tel" id="phone" class="input-field" placeholder="0555 000 00 00">
+          </div>
+        </div>
+        
+        <!-- VELİ BİLGİLERİ -->
+        <div id="veli-section" style="display:none;">
+          <div class="section-title">Veli Bilgileri (18 Yaş Altı İçin)</div>
+          <div class="two-col">
+            <div class="form-group">
+              <label>Veli Ad Soyad *</label>
+              <input type="text" id="parent_name" class="input-field" placeholder="Anne/Baba/Yakını Adı">
+            </div>
+            <div class="form-group">
+              <label>Veli Telefon *</label>
+              <input type="tel" id="parent_phone" class="input-field" placeholder="0555 000 00 00">
+            </div>
+          </div>
+        </div>
+        
+        <!-- İLETİŞİM & HESAP -->
+        <div class="section-title">Adres & Diğer Bilgiler</div>
+        <div class="two-col">
+          <div class="form-group">
+            <label>Şehir</label>
+            <input type="text" id="city" class="input-field" placeholder="İl">
+          </div>
+          <div class="form-group">
+            <label>İlçe</label>
+            <input type="text" id="district" class="input-field" placeholder="İlçe">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Açık Adres (İkamet)</label>
+          <textarea id="address" class="input-field" placeholder="Mahalle, Sokak..." rows="2"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Bizi Nereden Duydunuz?</label>
+          <select id="reference_source" class="input-field">
+            <option value="">Seçiniz (Örn: Instagram, Arkadaş vb.)</option>
+            <option value="Instagram">Instagram</option>
+            <option value="Facebook">Facebook</option>
+            <option value="Reklam">Reklam</option>
+            <option value="Arkadaş">Arkadaş / Tavsiye</option>
+            <option value="Arama Motoru">Google / Arama Motoru</option>
+            <option value="Diğer">Diğer</option>
+          </select>
+        </div>
+        <!-- SAĞLIK BİLGİLERİ -->
+        <div class="section-title">Sağlık Bilgileri</div>
+        <div class="two-col">
+          <div class="form-group">
+            <label>Kan Grubu</label>
+            <select id="blood_type" class="input-field">
+              <option value="">Seçiniz</option>
+              <option value="A+">A RH+</option>
+              <option value="A-">A RH-</option>
+              <option value="B+">B RH+</option>
+              <option value="B-">B RH-</option>
+              <option value="AB+">AB RH+</option>
+              <option value="AB-">AB RH-</option>
+              <option value="0+">0 RH+</option>
+              <option value="0-">0 RH-</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Kronik Rahatsızlık / Alerji</label>
+            <input type="text" id="health_conditions" class="input-field" placeholder="Varsa belirtiniz (Yoksa boş bırakın)">
+          </div>
+        </div>
+
+        <div class="section-title">Güvenlik & Şifre</div>
+        <div class="two-col">
+          <div class="form-group">
+            <label>Şifre (Giriş İçin) *</label>
+            <input type="password" id="password" class="input-field" placeholder="Min. 8 karakter" required minlength="8">
+          </div>
+          <div class="form-group">
+            <label>Şifre Tekrar *</label>
+            <input type="password" id="password2" class="input-field" placeholder="Şifreyi tekrar girin" required>
+          </div>
+        </div>
+
+        <!-- GÜVENLİK (CAPTCHA) -->
+        <div class="section-title" style="margin-top: 32px;">Güvenlik Doğrulaması</div>
+        <div class="captcha-box">
+          <div style="display:flex; flex-direction:column;">
+            <span style="font-size:14px; color:var(--text-400); font-weight:500;">Gösterilen işlemi çözün:</span>
+            <span class="captcha-val" id="captcha-question">...</span>
+          </div>
+          <input type="number" id="captcha_answer" class="input-field" style="width:140px; margin:0; text-align:center; font-size:18px; font-weight:bold;" placeholder="Cevap" required>
+        </div>
+
+        <!-- SÖZLEŞMELER -->
+        <div class="section-title" style="margin-top: 24px;">Onaylar</div>
+        <div class="checkbox-group">
+          <input type="checkbox" id="kvkk_approved" required>
+          <label for="kvkk_approved">
+            <a href="/pages/legal/kvkk-aydinlatma.html" target="_blank" rel="noopener">Kişisel verilerin işlenmesine ilişkin aydınlatma metnini</a> okudum. *
+          </label>
+        </div>
+        <div class="checkbox-group">
+          <input type="checkbox" id="contract_approved" required>
+          <label for="contract_approved">
+            <a href="#" onclick="openModal('contract-modal'); return false;">YT KAMPÜS ÜYELİK KAYIT VE TAAHHÜT METNİNİ</a> okudum, şartları kabul ediyor ve onaylıyorum. *
+          </label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-full btn-lg" id="submit-btn" style="margin-top:24px;">Kayıt İşlemini Tamamla</button>
+      </form>
+
+      <div class="auth-footer">Zaten hesabınız var mı? <a href="/pages/auth/login.html">Giriş Yapın</a></div>
+    </div>
+  </div>
+
+  <!-- KVKK MODAL -->
+  <div id="kvkk-modal" class="modal-overlay">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeModal('kvkk-modal')">&times;</span>
+      <h3>KİŞİSEL VERİLERİN KORUNMASI POLİTİKASI – YT Kampüs Kulübü</h3>
+      
+      <p>6698 sayılı Kişisel Verilerin Korunması Kanunu (“KVKK”) uyarınca, <b>YT Kampüs Kulübü</b> tarafından, Veri Sorumlusu sıfatıyla, kişisel verileriniz, iş amaçlarıyla bağlı olarak, aşağıda açıklandığı çerçevede kullanılmak, kaydedilmek, saklanmak, güncellenmek, aktarılmak ve/veya sınıflandırılmak suretiyle işlenecektir.</p>
+      
+      <p>Bu kapsamda YT Kampüs tarafından başta özel hayatın gizliliği olmak üzere, kişilerin temel hak ve özgürlüklerini korumak ve kişisel verilerin korunması amacıyla düzenlenen Kanun ve Yönetmelikler gereğince YT Kampüs, kişisel verilerinizin hukuka aykırı olarak işlenmesini önleme, hukuka aykırı olarak erişilmesini önleme ve muhafazasını sağlama amacıyla, uygun güvenlik düzeyini temin etmeye yönelik tüm teknik ve idari tedbirleri almaktadır.</p>
+      
+      <p><b>Veri sorumlusu sıfatıyla işlenen kişisel verilere aşağıda yer verilmektedir:</b><br>
+      İsim, soy isim, adres, il, ilçe, telefon numarası, e-posta adresi, fotoğraf ve veli bilgileri.</p>
+      
+      <p><b>Kişisel verilerin işlenme amaçları ve hukuki sebepleri:</b><br>
+      Tarafınızca paylaşılan kişisel verileriniz; YT Kampüs Kulübü tarafından sunulan ürün ve hizmetlerden sizleri faydalandırmak, pazarlama ve planlama faaliyetlerinin yürütülmesi, spor kulübü (yetkili veya çalışanları), sporcu ve aileleri ilişkilerinin kurulması amacıyla işlenir.</p>
+
+      <p><b>Kişisel verilerin toplanma ve saklanma yöntemi:</b><br>
+      Kişisel verileriniz elektronik ortamda, internet sitemizdeki ön kayıt formları aracılığıyla toplanır. YT Kampüs tarafından temin edilen ve saklanan kişisel verilerinizin saklandıkları ortamlarda yetkisiz erişime maruz kalmamaları, manipülasyona uğramamaları, kaybolmamaları amacıyla gereken iş süreçlerinin tasarımı ve teknik güvenlik altyapıları uygulanmaktadır. Yasal saklama süresi sona erdiğinde verileriniz imha edilecektir.</p>
+      
+      <p><b>Kişisel Verilerin Aktarılması:</b><br>
+      Toplanan kişisel verileriniz; YT Kampüs Kulübü iş ortaklarına, kanunen yetkili kamu kurum ve kuruluşlarına (TFF, Bakanlıklar vb.) KVKK 8. ve 9. maddelerinde belirtilen şartlar çerçevesinde aktarılabilecektir.</p>
+      
+      <p><b>KVKK’nın 11. maddesi gereği haklarınız:</b><br>
+      Kişisel verilerinizin işlenip işlenmediğini öğrenme, bilgi talep etme, eksik/yanlış ise düzeltilmesini isteme, silinmesini isteme hakkına sahipsiniz. Taleplerinizi <b>iletisim@ytkampus.com</b> adresi üzerinden iletebilirsiniz.</p>
+    </div>
+  </div>
+
+  <!-- SÖZLEŞME MODAL -->
+  <div id="contract-modal" class="modal-overlay">
+    <div class="modal-content">
+      <span class="modal-close" onclick="closeModal('contract-modal')">&times;</span>
+      <h3>YT KAMPÜS ÜYELİK KAYIT VE TAAHHÜT METNİ</h3>
+      <p><b>Saygıdeğer Üye Adayımız,</b></p>
+      <p>KAYSERİ YT KAMPÜS ailesine hoş geldiniz! Kulübümüz, bireylerin fiziksel, zihinsel ve sosyal gelişimlerini desteklemeyi, spor ahlakını ve disiplinini ön planda tutarak geleceğin başarılı sporcularını ve sağlıklı bireylerini yetiştirmeyi amaçlamaktadır.</p>
+      <p>Kulüp üyeliğinizin ve/veya velisi olduğunuz sporcumuzun kayıt işlemlerinin tamamlanabilmesi için lütfen aşağıdaki maddeleri dikkatlice okuyunuz ve onaylayınız.</p>
+      
+      <h4>1. Üyelik Şartları ve Genel Kurallar</h4>
+      <ul>
+        <li><b>Kulüp İlkelerine Uyum:</b> Üye (veya sporcu), antrenmanlarda, müsabakalarda ve kulüp faaliyetlerinde fair-play (dürüst oyun) kurallarına, antrenörlerin ve kulüp yönetiminin talimatlarına uymayı taahhüt eder.</li>
+        <li><b>Tesis ve Ekipman Kullanımı:</b> Kulübe ait tesis, araç-gereç ve malzemelerin korunmasına özen gösterilmesi esastır. Kasıtlı veya ihmal sonucu doğacak zararlardan üye/veli sorumludur.</li>
+        <li><b>Devamlılık ve Disiplin:</b> Sporcuların antrenman programlarına düzenli katılımı esastır. Geçerli bir mazereti olmaksızın devamsızlık yapan veya kulüp disiplinine aykırı davranan üyeler hakkında yönetim kurulu tarafından değerlendirme yapılır.</li>
+      </ul>
+
+      <h4>2. Mali Hükümler</h4>
+      <ul>
+        <li>Üyelik ve aidat ödemeleri, kulüp yönetiminin belirlediği [Aylık / Yıllık] periyotlarda ve ilan edilen tarihlerde düzenli olarak yapılmalıdır.</li>
+        <li>Zamanında yapılmayan ödemeler kulübün işleyişini doğrudan etkilediğinden, ödeme takvimine hassasiyet gösterilmesi rica olunur.</li>
+      </ul>
+
+      <h4>3. Sağlık Beyanı</h4>
+      <ul>
+        <li>Kulübümüze kayıt yaptıran üye/sporcu, aktif spor yapmasına engel teşkil edecek herhangi bir kronik veya akut sağlık problemi bulunmadığını beyan eder.</li>
+        <li><i>Not: Resmi müsabakalara katılım için ilgili hekimlerden alınacak "Spor Yapabilir" sağlık raporunun ibrazı zorunludur.</i></li>
+      </ul>
+
+      <h4>4. Kişisel Verilerin Korunması (KVKK) ve Medya</h4>
+      <ul>
+        <li>Kulübümüz, üyelik formunda paylaştığınız kişisel verileri yasal mevzuata uygun olarak sadece kulüp içi iletişim, lisans işlemleri ve organizasyonlar için saklar.</li>
+        <li>Maç videosu, fotoğraf veya görüntülerin kamuya açık yayımlanması ve tanıtım materyallerinde kullanılması üyelik sözleşmesiyle kabul edilmiş sayılmaz. Bu tür kullanımlar, gerekli hâllerde ayrıca alınacak açık rıza ve aydınlatma sürecine tabidir.</li>
+      </ul>
+
+      <h4 style="margin-top: 20px;">BEYAN VE ONAY</h4>
+      <p>YT KAMPÜS'ün tüzüğünü, yukarıda belirtilen şartları, kural ve yükümlülükleri okudum, anladım. Kulübün bir üyesi / sporcu velisi olarak bu kurallara tam bir uyum göstereceğimi kabul, beyan ve taahhüt ederim.</p>
+      <div style="background: var(--bg-800); padding: 16px; border-radius: 8px; margin-top: 16px;">
+        <p style="margin: 0; font-size: 13px; color: var(--text-400);"><i>* Bu formu onaylayarak, yukarıdaki beyanları kendi adıma ve (varsa) velisi bulunduğum sporcu adına dijital olarak imzalamış ve taahhüt etmiş sayılıyorum.</i></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/app.js?v=security-cookie-2"></script>
+  <script>
+    if (ProSaha.isLoggedIn()) window.location.href = '/pages/user/dashboard.html';
+    
+    // Parent info logic
+    document.getElementById('birth_date').addEventListener('change', function() {
+      const veliSection = document.getElementById('veli-section');
+      const pName = document.getElementById('parent_name');
+      const pPhone = document.getElementById('parent_phone');
+      
+      if (!this.value) {
+        veliSection.style.display = 'none';
+        pName.required = false;
+        pPhone.required = false;
+        return;
+      }
+      
+      const birthDate = new Date(this.value);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const m = today.getMonth() - birthDate.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      
+      if (age < 18) {
+        veliSection.style.display = 'block';
+        pName.required = true;
+        pPhone.required = true;
+      } else {
+        veliSection.style.display = 'none';
+        pName.required = false;
+        pPhone.required = false;
+        pName.value = '';
+        pPhone.value = '';
+      }
+    });
+
+    // Captcha Logic
+    let expectedCaptcha = 0;
+    function generateCaptcha() {
+      const n1 = Math.floor(Math.random() * 20) + 1;
+      const n2 = Math.floor(Math.random() * 20) + 1;
+      expectedCaptcha = n1 + n2;
+      document.getElementById('captcha-question').textContent = `${n1} + ${n2} = ?`;
+      document.getElementById('captcha_answer').value = '';
+    }
+    generateCaptcha();
+
+    // Modal Logic
+    function openModal(id) { document.getElementById(id).classList.add('active'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+    document.querySelectorAll('.modal-overlay').forEach(el => {
+      el.addEventListener('click', (e) => { if(e.target === el) el.classList.remove('active'); });
+    });
+
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submit-btn');
+      const errEl = document.getElementById('error-msg');
+      errEl.classList.remove('show');
+
+      // Captcha Check
+      const userAnswer = parseInt(document.getElementById('captcha_answer').value);
+      if (userAnswer !== expectedCaptcha) {
+        errEl.textContent = 'Güvenlik doğrulaması hatalı (İşlem sonucu yanlış). Lütfen tekrar deneyin.';
+        errEl.classList.add('show');
+        generateCaptcha();
+        return;
+      }
+
+      const p1 = document.getElementById('password').value;
+      const p2 = document.getElementById('password2').value;
+      if (p1 !== p2) { errEl.textContent = 'Şifreler eşleşmiyor'; errEl.classList.add('show'); return; }
+
+      const kvkk = document.getElementById('kvkk_approved').checked;
+      const contract = document.getElementById('contract_approved').checked;
+      if (!kvkk || !contract) { errEl.textContent = 'Lütfen zorunlu sözleşmeleri onaylayın.'; errEl.classList.add('show'); return; }
+
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner"></div> Kayıt yapılıyor...';
+
+      const payload = {
+        full_name: document.getElementById('full_name').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        password: p1,
+        birth_date: document.getElementById('birth_date').value || null,
+        parent_name: document.getElementById('parent_name').value,
+        parent_phone: document.getElementById('parent_phone').value,
+        city: document.getElementById('city').value,
+        district: document.getElementById('district').value,
+        address: document.getElementById('address').value,
+        reference_source: document.getElementById('reference_source').value,
+        blood_type: document.getElementById('blood_type').value,
+        health_conditions: document.getElementById('health_conditions').value,
+        kvkk_approved: kvkk,
+        contract_approved: contract
+      };
+
+      const { ok, data } = await ProSaha.fetch('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+
+      if (ok) {
+        ProSaha.setSession(data.token, data.user);
+        ProSaha.toast('Kayıt işleminiz başarıyla tamamlandı!');
+        setTimeout(() => {
+          if (localStorage.getItem('preselect_field')) {
+            window.location.href = '/pages/user/dashboard.html?page=booking';
+          } else {
+            window.location.href = '/pages/user/dashboard.html';
+          }
+        }, 1000);
+      } else {
+        errEl.textContent = data.error || 'Kayıt başarısız';
+        errEl.classList.add('show');
+        btn.disabled = false;
+        btn.innerHTML = 'Kayıt İşlemini Tamamla';
+      }
+    });
+  </script>
+</body>
+</html>

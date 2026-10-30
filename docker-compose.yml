@@ -1,0 +1,99 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: prosaha_db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD must be set}
+      MYSQL_DATABASE: halisaha
+      MYSQL_USER: prosaha_user
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD must be set}
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+      - prosaha_db_data:/var/lib/mysql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 10
+
+  backend:
+    build: ./backend
+    container_name: prosaha_backend
+    env_file:
+      - .env
+    environment:
+      DB_HOST: db
+      DB_USER: user
+      DB_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD must be set}
+      DB_NAME: halisaha
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set}
+      NODE_ENV: production
+      IYZICO_API_KEY: ${IYZICO_API_KEY}
+      IYZICO_SECRET_KEY: ${IYZICO_SECRET_KEY}
+      IYZICO_API_URL: ${IYZICO_API_URL:-https://sandbox-api.iyzipay.com}
+      PAYMENT_BASE_URL: ${PAYMENT_BASE_URL:-http://localhost:8085}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8085}
+    volumes:
+      - ./frontend/uploads:/app/uploads
+      - ./frontend/site-images:/app/site-images
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  frontend:
+    image: nginx:alpine
+    container_name: prosaha_frontend
+    ports:
+      - "8085:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  scoreboard:
+    build: ./scoreboard
+    container_name: ytkampus_scoreboard
+    ports:
+      - "8086:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: scoreboard_db
+      DB_PORT: 3306
+      DB_USER: scoreboard_user
+      DB_PASSWORD: ${SCOREBOARD_DB_PASSWORD:-scoreboard-local-change-before-production}
+      DB_NAME: halisaha_scoreboard
+      MAX_FILE_SIZE: ${SCOREBOARD_MAX_FILE_SIZE:-5242880}
+    volumes:
+      - scoreboard_uploads:/app/server/uploads
+    depends_on:
+      scoreboard_db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  scoreboard_db:
+    image: mysql:8.0
+    container_name: ytkampus_scoreboard_db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${SCOREBOARD_DB_ROOT_PASSWORD:-scoreboard-root-local-change-before-production}
+      MYSQL_DATABASE: halisaha_scoreboard
+      MYSQL_USER: scoreboard_user
+      MYSQL_PASSWORD: ${SCOREBOARD_DB_PASSWORD:-scoreboard-local-change-before-production}
+    volumes:
+      - ./scoreboard/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - scoreboard_db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD"]
+      timeout: 10s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  prosaha_db_data:
+    external: true
+    name: prosaha_db_legacy_check
+  scoreboard_db_data:
+  scoreboard_uploads:
